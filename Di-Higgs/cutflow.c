@@ -428,7 +428,7 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
 
             // if(!(rootFile.Contains("34228"))) continue;
             // if( q != 0 && q != N && q!= 4)    continue;
-            // if(q == N)  continue;
+            if(q != N-1)  continue;
 
             float cache[12] = {
                                 trig_match[q],//0
@@ -674,11 +674,11 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                     break;
                 }
 
-                weight_jvt = 1.0;
-                weight_bTagSF_DL1r_77 = 1.0;
+                // weight_jvt = 1.0;
+                // weight_bTagSF_DL1r_77 = 1.0;
                 //if(rootFile.Contains("450578")) mcWeight = lumi*pileupEventWeight_090*JVT_EventWeight*mcWeightOrg*4.8e-6*scale_nom/mc_xSection;
                 // if(rootFile.Contains("450578")) mcWeight = lumi*weight_pileup*weight_jvt*weight_mc*9.68e-6*mc_kFactor/totalWeights;
-                if(q == 0 || q == 1 || q == 2 || q == 4 || q == 5)    mcWeight = lumi*weight_pileup*weight_jvt*weight_mc*weight_bTagSF_DL1r_77*lepSFObjLoose*custTrigSF_LooseID_FCLooseIso_SLTorDLT*mc_xSection/totalWeights;
+                if(q == 0 || q == 1 || q == 2 || q == 4)    mcWeight = lumi*weight_pileup*weight_jvt*weight_mc*weight_bTagSF_DL1r_77*lepSFObjLoose*custTrigSF_LooseID_FCLooseIso_SLTorDLT*mc_xSection/totalWeights;
                 
                 else if(q == N) mcWeight = 1.0;
                 
@@ -913,7 +913,7 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 }
                 m_34 = (lep[ID[2]]+lep[ID[3]]).M();
 
-                if(lep_ID[ID[2]] == -lep_ID[ID[3]]) continue;
+                if(lep_ID[ID[2]] != -lep_ID[ID[3]]) continue;
                 ossf[q]=ossf[q]+mcWeight;
                 ossf_err[q]=ossf_err[q]+mcWeight*mcWeight;
                 
@@ -946,17 +946,17 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 b_tag[q]=b_tag[q]+mcWeight;
                 b_tag_err[q]=b_tag_err[q]+mcWeight*mcWeight;
 
-                if(m_12 > 75000 && m_12 < 100000) continue;
+                // if(m_12 > 75000 && m_12 < 100000) continue;
                 // if(m_12 > 50000) continue;
                 // if((jet[0]+jet[1]).M() < 280000) continue;
                 // if(met_met > 80000)    continue;
 
                 l_4=lep[ID[0]]+lep[ID[1]]+lep[ID[2]]+lep[ID[3]];
 
-                // if(l_4.M() < 107000 || l_4.M() > 133000) continue;
+                if(l_4.M() < 107000 || l_4.M() > 133000) continue;
                 // if(l_4.M() > 107000 && l_4.M() < 133000) continue;
                 // if(l_4.M() < 300000) continue;
-                if(l_4.M() < 95000 || l_4.M() > 120000) continue;
+                // if(l_4.M() < 95000 || l_4.M() > 120000) continue;
                 // if(l_4.M() > 120000) continue;
 
                 m_llll[q]=m_llll[q]+mcWeight;
