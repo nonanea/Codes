@@ -208,8 +208,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                             {0,4},//1
                             {0,600},//2
                             {0,400},//3
-                            // {100,140},//4
-                            {80,140},//4
+                            {100,140},//4
+                            // {80,140},//4
                             {0,400},//5
                             {0,110},//6
                             {0,70},//7
@@ -280,33 +280,11 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
     float njets_f[N+2] = {0},nbjets_f[N+2] = {0};
     float mcWeight_f[N+2] = {0};
 
-    //signal
-    // float lep_ID_0_s,lep_ID_1_s,lep_ID_2_s,lep_ID_3_s,lep_ID_4_s;
-    // float lep_Pt_0_s,lep_Pt_1_s,lep_Pt_2_s,lep_Pt_3_s,lep_Pt_4_s;
-    // float lep_Eta_0_s,lep_Eta_1_s,lep_Eta_2_s,lep_Eta_3_s,lep_Eta_4_s;
-    // float lep_Phi_0_s,lep_Phi_1_s,lep_Phi_2_s,lep_Phi_3_s,lep_Phi_4_s;
-    // float jet_E_0_s,jet_E_1_s;
-    // float jet_Pt_0_s,jet_Pt_1_s;
-    // float jet_Eta_0_s,jet_Eta_1_s;
-    // float jet_Phi_0_s,jet_Phi_1_s;
-    // float HT_s, HT_lep_s, HT_jets_s, met_met_s, met_phi_s, m_12_s, m_34_s, p_4l_s, p_jj_s, m_4l_s, m_jj_s, cs_jet_s, cs_lep_12_s, cs_lep_34_s, cs_pairs_s, cs_Z_pair_s, Dphi_met_jets_s;
-    // float njets_s,nbjets_s;
-    // float mcWeight_s;
-
-    // //background
-    // float lep_ID_0_b,lep_ID_1_b,lep_ID_2_b,lep_ID_3_b,lep_ID_4_b;
-    // float lep_Pt_0_b,lep_Pt_1_b,lep_Pt_2_b,lep_Pt_3_b,lep_Pt_4_b;
-    // float lep_Eta_0_b,lep_Eta_1_b,lep_Eta_2_b,lep_Eta_3_b,lep_Eta_4_b;
-    // float lep_Phi_0_b,lep_Phi_1_b,lep_Phi_2_b,lep_Phi_3_b,lep_Phi_4_b;
-    // float jet_E_0_b,jet_E_1_b;
-    // float jet_Pt_0_b,jet_Pt_1_b;
-    // float jet_Eta_0_b,jet_Eta_1_b;
-    // float jet_Phi_0_b,jet_Phi_1_b;
-    // float HT_b, HT_lep_b, HT_jets_b, met_met_b, met_phi_b, m_12_b, m_34_b, p_4l_b, p_jj_b, m_4l_b, m_jj_b, cs_jet_b, cs_lep_12_b, cs_lep_34_b, cs_pairs_b, cs_Z_pair_b, Dphi_met_jets_b;
-    // float njets_b,nbjets_b;
-    // float mcWeight_b;
     int bkg;
     //float lep_E_0,lep_E_1,lep_E_2,lep_E_3,lep_E_4;
+
+    // const char *process_list[N+1] = {"tt","VV","ttV","Higgs","Z+jets","VVV","Signal","data"};
+    const char *process_list[N+2] = {"tt","VV","ttV","Higgs","Z+jets","Signal","data","background"};
 
     TString rootFile;
     TString plotPath = samplePath;
@@ -315,26 +293,61 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
     // Check Plot directory exist or not, if not, create it
     if (!gSystem->OpenDirectory(plotPath + plotStorePath + categories[n_type] + "_/"))
         gSystem->MakeDirectory(plotPath + plotStorePath + categories[n_type] + "_/");
+        gSystem->MakeDirectory(plotPath + plotStorePath + categories[n_type] + "_/Trees/");
+        for(i = 0; i < N+2; i++)    
+        gSystem->MakeDirectory(plotPath + plotStorePath + categories[n_type] + "_/Trees/" + process_list[i] + "/");
 
-    plotPath = plotPath + plotStorePath + categories[n_type] + "_/" + categories[type] + "_";
+    plotPath = plotPath + plotStorePath + categories[n_type] + "_/" + categories[type];
 
     cout<<plotPath<<endl;
 
-    TFile *pre_f=new TFile( plotPath + "Preselection.root","recreate");
-    
+    // TFile *pre_f=new TFile( plotPath + treeName + "_Preselection.root","recreate");
+   
+    const char *entry;
+    // TFile *f;
+    // TList *tl;
+    // vector<TString> t_name, file_list;
+    // p = 1;
+    // q = 0;
+
+    // while((entry = (char *)gSystem->GetDirEntry(sampleDir)))
+    // {
+    //     rootFile = entry;
+    //     if(rootFile.EndsWith(ext))
+    //     {
+    //         file_list.push_back(rootFile);
+    //         f = new TFile(samplePath+rootFile,"read");
+    //         tl = (TList*) f->GetListOfKeys();
+    //         p = tl.size();
+    //         if(p > q)   q = p;
+    //     }
+    // }
+
+    // f = new TFile(samplePath + file_list[q],"read");
+    // tl = (TList*) f->GetListOfKeys();
+
+    // for(p = 0; p < q; p++)  t_name.push_back((*tl->At(i)).GetName());
+
     TTree *tt[N+2];
 
-    tt[0] = new TTree("tt","tt");
-    tt[1] = new TTree("VV","VV");
-    tt[2] = new TTree("ttV","ttV");
-    tt[3] = new TTree("single_H","single_H");
-    tt[4] = new TTree("Zjets","Zjets");
-    // tt[5] = new TTree("VVV","VVV");
-    tt[N-1] = new TTree("signal","signal");
-    tt[N] = new TTree("data","data");
-    tt[N+1] = new TTree("background","background");
+    for(i = 0; i < N+2; i++)
+    {
+        tt[i] = new TTree(treeName,process_list[i]+treeName);
+        tt[i]->SetDirectory(0);
+    }
 
-    for(i = 0; i < N + 2; i++)
+
+    // tt[0] = new TTree("tt","tt");
+    // tt[1] = new TTree("VV","VV");
+    // tt[2] = new TTree("ttV","ttV");
+    // tt[3] = new TTree("single_H","single_H");
+    // tt[4] = new TTree("Zjets","Zjets");
+    // // tt[5] = new TTree("VVV","VVV");
+    // tt[N-1] = new TTree("signal","signal");
+    // tt[N] = new TTree("data","data");
+    // tt[N+1] = new TTree("background","background");
+
+    for(i = 0; i < N+2; i++)
     {
         tt[i]->Branch("lep_ID_0",&lep_ID_0_f[i]);
         tt[i]->Branch("lep_Pt_0",&lep_Pt_0_f[i]);
@@ -352,11 +365,12 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
         tt[i]->Branch("lep_Pt_2",&lep_Pt_2_f[i]);
         tt[i]->Branch("lep_Eta_2",&lep_Eta_2_f[i]);
         tt[i]->Branch("lep_Phi_2",&lep_Phi_2_f[i]);
-        tt[i]->Branch("lep_iso_1",&lep_iso_1_f[i]);
+        tt[i]->Branch("lep_iso_2",&lep_iso_1_f[i]);
         
         tt[i]->Branch("lep_ID_3",&lep_ID_3_f[i]); 
         tt[i]->Branch("lep_Pt_3",&lep_Pt_3_f[i]);
         tt[i]->Branch("lep_Eta_3",&lep_Eta_3_f[i]);
+        tt[i]->Branch("lep_Phi_3",&lep_Phi_3_f[i]);
         tt[i]->Branch("lep_iso_3",&lep_iso_3_f[i]);
         
         tt[i]->Branch("jet_E_0",&jet_E_0_f[i]);
@@ -390,15 +404,11 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
 
         tt[i]->Branch("mcWeight",&mcWeight_f[i]);
     }
-
+    // cout<<"creating branch"<<endl;
     tt[N+1]->Branch("bkg",&bkg,"bkg/I");
 
-    const char *entry;
     ofstream myfile, yieldfile;
     myfile.open (plotPath + "Results.txt");
-
-    // const char *process_list[N+1] = {"tt","VV","ttV","Higgs","Z+jets","VVV","Signal","data"};
-    const char *process_list[N+1] = {"tt","VV","ttV","Higgs","Z+jets","Signal","data"};
 
     while((entry = (char *)gSystem->GetDirEntry(sampleDir)))
     {
@@ -427,8 +437,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             }
 
             // if(!(rootFile.Contains("34228"))) continue;
-            // if( q != 0 && q != N && q!= 4)    continue;
-            if(q != N-1)  continue;
+            // if( q != N - 1 && q != N )    continue;
+            // if(q != N)  continue;
 
             float cache[12] = {
                                 trig_match[q],//0
@@ -469,14 +479,14 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             TLorentzVector l,l_2,l_4,jet[2],lepton[7];
 
             TFile *f = new TFile(samplePath+rootFile,"read");
-            TList *tl = (TList*) f->GetListOfKeys();
 
             // for(i = 0; i < l->GetEntries(); i++)
             // s.push_back((*l->At(i)).GetName());
             //TTree *t = (TTree*) f->Get("nominal");
             //TTree *t1 = (TTree*) f->Get("sumWeights");
-            // TTree *t = (TTree*) f->Get("quadlep");
-            TTree *t = (TTree*) f->Get(treeName);
+            TTree *t = (TTree*) f->Get("quadlep");
+            // cout<<"tree reading"<<endl;
+            // TTree *t = (TTree*) f->Get(treeName);
 
             //t1->SetBranchAddress("totalEventsWeighted",&totalEventsWeighted);
             //t1->SetBranchAddress("totalEvents",&totalEvents);
@@ -657,11 +667,12 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 
                 t->GetEntry(i);
     
+            // cout<<"===================WARNING===================="<<endl;
                 double delta_m = 0, m_12 = 0, m_34 = 0, delta_R = 0, sum_weights = 1;
 
                 //if(quadlep_type < 1)   continue;
                 //if(total_charge != 0)   continue;
-                //if(i > 100)    break;
+                // if(i > 10)    break;
                 //MCweight: "(36074.6*(RunYear==2015||RunYear==2016)+43813.7*(RunYear==2017)+ 58450.1*(RunYear==2018))*pileupEventWeight_090*JVT_EventWeight*mc_xSection*mc_kFactor*mcWeightOrg/totalweightedevents"
                 //cout<<RunYear<<endl;
 
@@ -722,7 +733,6 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 lep_id[3] = 1.0*lep_ID_3;
                 //lep_id[4] = 1.0*lep_ID_4;
 
-                delta_m = 999999;
                 m_12 = 0.0;
                 m_34 = 0.0;
 
@@ -777,14 +787,19 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 // if(lep_isolationPflowLoose_1)   j++;
                 // if(lep_isolationPflowLoose_2)   j++;
                 // if(lep_isolationPflowLoose_3)   j++;
-                // if(j < 4)   continue; 
+                if(lep_isolationFCLoose_0)   j++;
+                if(lep_isolationFCLoose_1)   j++;
+                if(lep_isolationFCLoose_2)   j++;
+                if(lep_isolationFCLoose_3)   j++;
+                if(j < 4)   continue; 
 
                 // if(lep_isolationPflowLoose_3 == 0) continue;
                 // if(lep_isolationPflowLoose_1 == 0 || lep_isolationPflowLoose_2 == 0 || (lep_isolationPflowLoose_2 == 0 && lep_isolationPflowLoose_3 == 0)) continue;
 
                 // if(!lep_isolationFCLoose_2 && !lep_isolationFCLoose_3) continue;
                 // if(lep_plvWP_Loose_2 == 0 && lep_plvWP_Loose_3 == 0) continue;
-                if(lep_isolationPflowLoose_2 == 0 && lep_isolationPflowLoose_3 == 0) continue;
+                // if(lep_isolationPflowLoose_2 == 0 && lep_isolationPflowLoose_3 == 0) continue;
+                // if(lep_isolationFCLoose_2 == 0 && lep_isolationFCLoose_3 == 0) continue;
                 
                 iso[q]=iso[q]+mcWeight;
                 iso_err[q]=iso_err[q]+mcWeight*mcWeight;
@@ -813,9 +828,6 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 jet_cut_err[q]=jet_cut_err[q]+mcWeight*mcWeight;*/
                 
                 delta_R = 10.0;
-
-                check++;
-                check_weighted = check_weighted + mcWeight;
     
                 //lepton separation
                 for(j = 1; j < n_lep; j++)
@@ -865,9 +877,12 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 lep_pt_err[q]=lep_pt_err[q]+mcWeight*mcWeight;
 
                 //lepton pair selection
-                for(j = 1; j < n_lep; j++)
+                delta_m = 999999;
+                l_2.SetPtEtaPhiM(0,0,0,Z_m);
+
+                for(j = 1; j < n_lep && l_2.M() > 5000; j++)
                 {
-                    for(k = 0; k < j; k++)
+                    for(k = 0; k < j && l_2.M() > 5000; k++)
                     {
                         if(lep_ID[j] == -lep_ID[k] && lep_ID[j] != 0 )
                         {
@@ -883,6 +898,13 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                         }
                     }
                 }
+                
+                if(l_2.M() < 5000)  continue;
+                
+                Jpsi[q]=Jpsi[q]+mcWeight;
+                Jpsi_err[q]=Jpsi_err[q]+mcWeight*mcWeight;
+
+                if(ID[0] == ID[1])  continue;
                 // if(lep_ID[ID[0]] != -lep_ID[ID[1]]) continue;
 
                 // for(j = 1; j < n_lep; j++)
@@ -911,30 +933,29 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                     ID[2] = 3 - ID[0];
                     ID[3] = 3 - ID[1];
                 }
-                m_34 = (lep[ID[2]]+lep[ID[3]]).M();
 
-                if(lep_ID[ID[2]] != -lep_ID[ID[3]]) continue;
+                if(lep_ID[ID[2]] == -lep_ID[ID[3]]) continue;
+
                 ossf[q]=ossf[q]+mcWeight;
                 ossf_err[q]=ossf_err[q]+mcWeight*mcWeight;
                 
-                //cout<<lep_ID[ID[0]]<<lep_ID[ID[1]]<<lep_ID[ID[2]]<<lep_ID[ID[3]]<<endl;
+                m_34 = (lep[ID[2]]+lep[ID[3]]).M();
+                // cout<<lep_ID[ID[0]]<<lep_ID[ID[1]]<<lep_ID[ID[2]]<<lep_ID[ID[3]]<<endl;
 
-                if(m_34 < 5000 ) continue;
+                // if(m_34 < 5000 ) continue;
 
-                if(lep_ID[ID[0]] == -lep_ID[ID[2]])
-                {
-                    if((lep[ID[0]]+lep[ID[2]]).M() < 5000 || (lep[ID[1]]+lep[ID[3]]).M() < 5000 )  continue;
-                    // if((lep[ID[0]]+lep[ID[2]]).M() < (lep[ID[1]]+lep[ID[3]]).M())   object = (lep[ID[0]]+lep[ID[2]]).M();
-                    // else    object = (lep[ID[1]]+lep[ID[3]]).M();
-                }
-                if(lep_ID[ID[0]] == -lep_ID[ID[3]])
-                {
-                    if((lep[ID[0]]+lep[ID[3]]).M() < 5000 || (lep[ID[1]]+lep[ID[2]]).M() < 5000 )  continue;
-                    // if((lep[ID[0]]+lep[ID[3]]).M() < (lep[ID[1]]+lep[ID[2]]).M())   object = (lep[ID[0]]+lep[ID[3]]).M();
-                    // else    object = (lep[ID[1]]+lep[ID[2]]).M();
-                }
-                Jpsi[q]=Jpsi[q]+mcWeight;
-                Jpsi_err[q]=Jpsi_err[q]+mcWeight*mcWeight;
+                // if(lep_ID[ID[0]] == -lep_ID[ID[2]])
+                // {
+                //     if((lep[ID[0]]+lep[ID[2]]).M() < 5000 || (lep[ID[1]]+lep[ID[3]]).M() < 5000 )  continue;
+                //     // if((lep[ID[0]]+lep[ID[2]]).M() < (lep[ID[1]]+lep[ID[3]]).M())   object = (lep[ID[0]]+lep[ID[2]]).M();
+                //     // else    object = (lep[ID[1]]+lep[ID[3]]).M();
+                // }
+                // if(lep_ID[ID[0]] == -lep_ID[ID[3]])
+                // {
+                //     if((lep[ID[0]]+lep[ID[3]]).M() < 5000 || (lep[ID[1]]+lep[ID[2]]).M() < 5000 )  continue;
+                //     // if((lep[ID[0]]+lep[ID[3]]).M() < (lep[ID[1]]+lep[ID[2]]).M())   object = (lep[ID[0]]+lep[ID[3]]).M();
+                //     // else    object = (lep[ID[1]]+lep[ID[2]]).M();
+                // }
 
                 // if(nJets_OR > 0) continue;
                 if(nJets_OR < 2) continue;
@@ -946,21 +967,25 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 b_tag[q]=b_tag[q]+mcWeight;
                 b_tag_err[q]=b_tag_err[q]+mcWeight*mcWeight;
 
+                if(m_12 < 75000 || m_12 > 100000) continue;
                 // if(m_12 > 75000 && m_12 < 100000) continue;
                 // if(m_12 > 50000) continue;
                 // if((jet[0]+jet[1]).M() < 280000) continue;
-                // if(met_met > 80000)    continue;
+                // if(met_met > 70000)    continue;
 
                 l_4=lep[ID[0]]+lep[ID[1]]+lep[ID[2]]+lep[ID[3]];
 
-                if(l_4.M() < 107000 || l_4.M() > 133000) continue;
+                // if(l_4.M() < 107000 || l_4.M() > 133000) continue;
                 // if(l_4.M() > 107000 && l_4.M() < 133000) continue;
                 // if(l_4.M() < 300000) continue;
                 // if(l_4.M() < 95000 || l_4.M() > 120000) continue;
-                // if(l_4.M() > 120000) continue;
+                if(l_4.M() > 133000) continue;
 
                 m_llll[q]=m_llll[q]+mcWeight;
                 m_llll_err[q]=m_llll_err[q]+mcWeight*mcWeight;
+
+                check++;
+                check_weighted = check_weighted + mcWeight;
 
                 TVector3 l_boost = l_4.BoostVector();
                 TVector3 jet_boost = (jet[0]+jet[1]).BoostVector();
@@ -969,6 +994,7 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
 
                 TLorentzVector l_0 = lep[ID[0]], l_1 = lep[ID[1]], Z_0 = lep[ID[0]]+lep[ID[1]], l_2 = lep[ID[2]], l_3 = lep[ID[3]], Z_1 = lep[ID[2]]+lep[ID[3]];
                 
+                // if(l_2.P() == l_3.P())    cout<<ID[2]<<","<<ID[3]<<endl;
                 l_0.Boost(-l_boost);
                 l_1.Boost(-l_boost);
                 Z_0.Boost(-l_boost);
@@ -993,8 +1019,9 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                 cs_Z_pair = PlaneAngle(z_axis,Z_0,l_0,l_1);
 
                 cs_pairs = PlaneAngle(l_0,l_1,l_2,l_3);
+                // if(TMath::IsNaN(cs_pairs))    cs_pairs = 0;
 
-                if(q != 4)
+                if(q != N+1)
                 {
                     lep_ID_0_f[q] = lep_ID[0];
                     lep_Pt_0_f[q] = lep[0].Pt();
@@ -1053,7 +1080,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
                     tt[q]->Fill();
                 }
 
-                else if(q != N - 1 && q != N)
+                if(q != N - 1 && q != N && q != 4 && !rootFile.Contains("342285") && !rootFile.Contains("410157"))
+                // else
                 {
                     lep_ID_0_f[N+1] = lep_ID[0];
                     lep_Pt_0_f[N+1] = lep[0].Pt();
@@ -1113,144 +1141,6 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
 
                     tt[N+1]->Fill();
                 }
-
-                // if(q == N - 1)
-                // {
-                    // lep_ID_0_s = lep_ID[ID[0]];
-                    // lep_Pt_0_s = lep[ID[0]].Pt();
-                    // lep_Eta_0_s = lep[ID[0]].Eta();
-                    // lep_Phi_0_s = lep[ID[0]].Phi();
-                    // lep_ID_1_s = lep_ID[ID[1]];
-                    // lep_Pt_1_s = lep[ID[1]].Pt();
-                    // lep_Eta_1_s = lep[ID[1]].Eta();
-                    // lep_Phi_1_s = lep[ID[1]].Phi();
-                    // lep_ID_2_s = lep_ID[ID[2]];
-                    // lep_Pt_2_s = lep[ID[2]].Pt();
-                    // lep_Eta_2_s = lep[ID[2]].Eta();
-                    // lep_Phi_2_s = lep[ID[2]].Phi();
-                    // lep_ID_3_s = lep_ID[ID[3]];
-                    // lep_Pt_3_s = lep[ID[3]].Pt();
-                    // lep_Eta_3_s = lep[ID[3]].Eta();
-                    // lep_Phi_3_s = lep[ID[3]].Phi();
-
-                //     lep_ID_0_s = lep_ID[0];
-                //     lep_Pt_0_s = lep[0].Pt();
-                //     lep_Eta_0_s = lep[0].Eta();
-                //     lep_Phi_0_s = lep[0].Phi();
-                //     lep_ID_1_s = lep_ID[1];
-                //     lep_Pt_1_s = lep[1].Pt();
-                //     lep_Eta_1_s = lep[1].Eta();
-                //     lep_Phi_1_s = lep[1].Phi();
-                //     lep_ID_2_s = lep_ID[2];
-                //     lep_Pt_2_s = lep[2].Pt();
-                //     lep_Eta_2_s = lep[2].Eta();
-                //     lep_Phi_2_s = lep[2].Phi();
-                //     lep_ID_3_s = lep_ID[3];
-                //     lep_Pt_3_s = lep[3].Pt();
-                //     lep_Eta_3_s = lep[3].Eta();
-                //     lep_Phi_3_s = lep[3].Phi();
-                    
-                //     jet_E_0_s = jet[0].E();
-                //     jet_Pt_0_s = jet[0].Pt();
-                //     jet_Eta_0_s = jet[0].Eta();
-                //     jet_Phi_0_s = jet[0].Phi();
-                //     jet_E_1_s = jet[1].E();
-                //     jet_Pt_1_s = jet[1].Pt();
-                //     jet_Eta_1_s = jet[1].Eta();
-                //     jet_Phi_1_s = jet[1].Phi();
-
-                //     m_12_s = m_12;
-                //     m_34_s = m_34;
-                //     m_4l_s = l_4.M()/1000;
-                //     m_jj_s = (jet[0]+jet[1]).M()/1000;
-                //     p_4l_s = l_4.Pt()/1000;
-                //     p_jj_s = (jet[0]+jet[1]).Pt()/1000;
-                //     cs_jet_s = cs_jet;
-                //     cs_lep_12_s = cs_lep_12;
-                //     cs_lep_34_s = cs_lep_34;
-                //     cs_pairs_s = cs_pairs;
-                //     cs_Z_pair_s = cs_Z_pair;
-                //     met_met_s = met_met;
-                //     HT_s = HT;
-                //     HT_lep_s = HT_lep;
-                //     Dphi_met_jets_s = met_phi - jet[0].Phi();
-
-                //     njets_s = nJets_OR*1.0;
-                //     nbjets_s = nJets_OR_DL1r_77*1.0;
-
-                //     mcWeight_s = mcWeight;
-
-                //     t_sig->Fill();
-                // }
-
-                // else
-                // {
-                //     lep_ID_0_b = lep_ID[0];
-                //     lep_Pt_0_b = lep[0].Pt();
-                //     lep_Eta_0_b = lep[0].Eta();
-                //     lep_Phi_0_b = lep[0].Phi();
-                //     lep_ID_1_b = lep_ID[1];
-                //     lep_Pt_1_b = lep[1].Pt();
-                //     lep_Eta_1_b = lep[1].Eta();
-                //     lep_Phi_1_b = lep[1].Phi();
-                //     lep_ID_2_b = lep_ID[2];
-                //     lep_Pt_2_b = lep[2].Pt();
-                //     lep_Eta_2_b = lep[2].Eta();
-                //     lep_Phi_2_b = lep[2].Phi();
-                //     lep_ID_3_b = lep_ID[3];
-                //     lep_Pt_3_b = lep[3].Pt();
-                //     lep_Eta_3_b = lep[3].Eta();
-                //     lep_Phi_3_b = lep[3].Phi();
-                    
-                //     jet_E_0_b = jet[0].E();
-                //     jet_Pt_0_b = jet[0].Pt();
-                //     jet_Eta_0_b = jet[0].Eta();
-                //     jet_Phi_0_b = jet[0].Phi();
-                //     jet_E_1_b = jet[1].E();
-                //     jet_Pt_1_b = jet[1].Pt();
-                //     jet_Eta_1_b = jet[1].Eta();
-                //     jet_Phi_1_b = jet[1].Phi();
-
-                //     m_12_b = m_12;
-                //     m_34_b = m_34;
-                //     m_4l_b = l_4.M()/1000;
-                //     m_jj_b = (jet[0]+jet[1]).M()/1000;
-                //     p_4l_b = l_4.Pt()/1000;
-                //     p_jj_b = (jet[0]+jet[1]).Pt()/1000;
-                //     cs_jet_b = cs_jet;
-                //     cs_lep_12_b = cs_lep_12;
-                //     cs_lep_34_b = cs_lep_34;
-                //     cs_pairs_b = cs_pairs;
-                //     cs_Z_pair_b = cs_Z_pair;
-                //     met_met_b = met_met;
-                //     HT_b = HT;
-                //     HT_lep_b = HT_lep;
-                //     Dphi_met_jets_b = met_phi - jet[0].Phi();
-
-                //     njets_b = nJets_OR*1.0;
-                //     nbjets_b = nJets_OR_DL1r_77*1.0;
-
-                //     mcWeight_b = 25.62/4.4*mcWeight;
-
-                //     bkg = q;
-
-                //     t_bkg->Fill();
-                // }
-                
-                // m_12 = 0;
-                // for(j = 1; j < n_lep; j++)
-                // {
-                //     for(k = 0; k < j; k++)
-                //     {
-                //         l_2 = lep[j]+lep[k];
-                //         if(l_2.M() > m_12 && lep_ID[j]*lep_ID[k] < 0)
-                //         {
-                //             m_12 = l_2.M();
-                //             ID[0] = j;
-                //             ID[1] = k;
-                //         }
-                //     }
-                // }
 
                 double variables[99] = {
                                         // m_12/1000,
@@ -1345,8 +1235,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             cout<<"lep isolation:"<<iso[q] - cache[1]<<"+-"<<sqrt(iso_err[q] - err_cache[1])<<endl;
             cout<<"lep sepa:"<<lep_sepa[q] - cache[2]<<"+-"<<sqrt(lep_sepa_err[q] - err_cache[2])<<endl;
             cout<<"lep kine:"<<lep_pt[q] - cache[3]<<"+-"<<sqrt(lep_pt_err[q] - err_cache[3])<<endl;
-            cout<<"pairs ossf:"<<ossf[q] - cache[4]<<"+-"<<sqrt(ossf_err[q] - err_cache[4])<<endl;
             cout<<"J/psi veto:"<<Jpsi[q] - cache[5]<<"+-"<<sqrt(Jpsi_err[q] - err_cache[5])<<endl;
+            cout<<"pairs ossf:"<<ossf[q] - cache[4]<<"+-"<<sqrt(ossf_err[q] - err_cache[4])<<endl;
             cout<<"jet number:"<<jet_num[q] - cache[6]<<"+-"<<sqrt(jet_num_err[q] - err_cache[6])<<endl;
             cout<<"b-tagging:"<<b_tag[q] - cache[7]<<"+-"<<sqrt(b_tag_err[q] - err_cache[7])<<endl;
             cout<<"4l mass:"<<m_llll[q] - cache[8]<<"+-"<<sqrt(m_llll_err[q] - err_cache[8])<<endl;
@@ -1366,8 +1256,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             myfile<<"lep isolation:"<<iso[q] - cache[1]<<"+-"<<sqrt(iso_err[q] - err_cache[1])<<endl;
             myfile<<"lep sepa:"<<lep_sepa[q] - cache[2]<<"+-"<<sqrt(lep_sepa_err[q] - err_cache[2])<<endl;
             myfile<<"lep kine:"<<lep_pt[q] - cache[3]<<"+-"<<sqrt(lep_pt_err[q] - err_cache[3])<<endl;
-            myfile<<"pairs ossf:"<<ossf[q] - cache[4]<<"+-"<<sqrt(ossf_err[q] - err_cache[4])<<endl;
             myfile<<"J/psi veto:"<<Jpsi[q] - cache[5]<<"+-"<<sqrt(Jpsi_err[q] - err_cache[5])<<endl;
+            myfile<<"pairs ossf:"<<ossf[q] - cache[4]<<"+-"<<sqrt(ossf_err[q] - err_cache[4])<<endl;
             myfile<<"jet number:"<<jet_num[q] - cache[6]<<"+-"<<sqrt(jet_num_err[q] - err_cache[6])<<endl;
             myfile<<"b-tagging:"<<b_tag[q] - cache[7]<<"+-"<<sqrt(b_tag_err[q] - err_cache[7])<<endl;
             myfile<<"4l mass:"<<m_llll[q] - cache[8]<<"+-"<<sqrt(m_llll_err[q] - err_cache[8])<<endl;
@@ -1392,8 +1282,16 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
         }
     }
 
-    pre_f->Write();
-    pre_f->Close();
+    // pre_f->Write();
+    TFile *pre_f;
+    for(p = 0; p < N+2; p++)
+    {
+        pre_f = new TFile(plotPath + "Trees/" + process_list[p] + "/" +treeName + "_Preselection.root","recreate");
+        tt[p]->Write();
+        pre_f->Write();
+        pre_f->Close();
+    }
+    // pre_f->Close();
 
     TPaveText *pt;
     // pt = new TPaveText(.05,.1,.9,.8);
@@ -1415,8 +1313,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
     flow[3] = "Lepton Isolation";
     flow[4] = "Leptons Separation";
     flow[5] = "Leptons Kinematics";
-    flow[6] = "Pair OSSF";
     flow[7] = "J/$\\psi$ Veto";
+    flow[6] = "Pair OSSF";
     flow[8] = "$\\ge2$ Jets";
     flow[9] = "$\\ge1$ b Jets";
     flow[10] = "107 GeV$<M_{4l}<$133 GeV";
@@ -1424,7 +1322,7 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
     flow[12] = "Relative Efficiency";
     // yieldfile<<flow<<"\n"<<"\\midrule"<<endl;
 
-    const char *flowList[13] = {"","Normalized Events","Trigger Matching","Leptons Isolation","Leptons Separation","Leptons Kinematics","Pair OSSF","J/ #psi veto","#geq 2 jets","#geq 1 b jets","107 GeV <M_{ 4l} <133 GeV","Final Entries Number","Relative Efficiency"};
+    const char *flowList[13] = {"","Normalized Events","Trigger Matching","Leptons Isolation","Leptons Separation","Leptons Kinematics","J/ #psi veto","Pair OSSF","#geq 2 jets","#geq 1 b jets","107 GeV <M_{ 4l} <133 GeV","Final Entries Number","Relative Efficiency"};
 
     TCanvas *c1 = new TCanvas("c1", "Graph Draw Options", 1600, 400);
     //TText *t = new TText();
@@ -1476,8 +1374,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             flow[3] = flow[3] + "&" + (Form("%.3f$\\pm$%.3f",iso[p],sqrt(iso_err[p])));
             flow[4] = flow[4] + "&" + (Form("%.3f$\\pm$%.3f",lep_sepa[p],sqrt(lep_sepa_err[p])));
             flow[5] = flow[5] + "&" + (Form("%.3f$\\pm$%.3f",lep_pt[p],sqrt(lep_pt_err[p])));
-            flow[6] = flow[6] + "&" + (Form("%.3f$\\pm$%.3f",ossf[p],sqrt(ossf_err[p])));
             flow[7] = flow[7] + "&" + (Form("%.3f$\\pm$%.3f",Jpsi[p],sqrt(Jpsi_err[p])));
+            flow[6] = flow[6] + "&" + (Form("%.3f$\\pm$%.3f",ossf[p],sqrt(ossf_err[p])));
             flow[8] = flow[8] + "&" + (Form("%.3f$\\pm$%.3f",jet_num[p],sqrt(jet_num_err[p])));
             flow[9] = flow[9] + "&" + (Form("%.3f$\\pm$%.3f",b_tag[p],sqrt(b_tag_err[p])));
             flow[10] = flow[10] + "&" + (Form("%.3f$\\pm$%.3f",m_llll[p],sqrt(m_llll_err[p])));
@@ -1489,8 +1387,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             pt->AddText(Form("%.3f #pm%.3f",iso[p],sqrt(iso_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",lep_sepa[p],sqrt(lep_sepa_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",lep_pt[p],sqrt(lep_pt_err[p])));
-            pt->AddText(Form("%.3f #pm%.3f",ossf[p],sqrt(ossf_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",Jpsi[p],sqrt(Jpsi_err[p])));
+            pt->AddText(Form("%.3f #pm%.3f",ossf[p],sqrt(ossf_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",jet_num[p],sqrt(jet_num_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",b_tag[p],sqrt(b_tag_err[p])));
             pt->AddText(Form("%.3f #pm%.3f",m_llll[p],sqrt(m_llll_err[p])));
@@ -1505,8 +1403,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             flow[3] = flow[3] + "&" + (Form("%.0f$\\pm$%.0f",iso[p],sqrt(iso_err[p])));
             flow[4] = flow[4] + "&" + (Form("%.0f$\\pm$%.0f",lep_sepa[p],sqrt(lep_sepa_err[p])));
             flow[5] = flow[5] + "&" + (Form("%.0f$\\pm$%.0f",lep_pt[p],sqrt(lep_pt_err[p])));
-            flow[6] = flow[6] + "&" + (Form("%.0f$\\pm$%.0f",ossf[p],sqrt(ossf_err[p])));
             flow[7] = flow[7] + "&" + (Form("%.0f$\\pm$%.0f",Jpsi[p],sqrt(Jpsi_err[p])));
+            flow[6] = flow[6] + "&" + (Form("%.0f$\\pm$%.0f",ossf[p],sqrt(ossf_err[p])));
             flow[8] = flow[8] + "&" + (Form("%.0f$\\pm$%.0f",jet_num[p],sqrt(jet_num_err[p])));
             flow[9] = flow[9] + "&" + (Form("%.0f$\\pm$%.0f",b_tag[p],sqrt(b_tag_err[p])));
             flow[10] = flow[10] + "&" + (Form("%.0f$\\pm$%.0f",m_llll[p],sqrt(m_llll_err[p])));
@@ -1518,8 +1416,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
             pt->AddText(Form("%.0f",iso[p]));
             pt->AddText(Form("%.0f",lep_sepa[p]));
             pt->AddText(Form("%.0f",lep_pt[p]));
-            pt->AddText(Form("%.0f",ossf[p]));
             pt->AddText(Form("%.0f",Jpsi[p]));
+            pt->AddText(Form("%.0f",ossf[p]));
             pt->AddText(Form("%.0f",jet_num[p]));
             pt->AddText(Form("%.0f",b_tag[p]));
             pt->AddText(Form("%.0f",m_llll[p]));
@@ -1541,8 +1439,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
         cout<<"lep isolation:"<<iso[p]<<"+-"<<sqrt(iso_err[p])<<endl;
         cout<<"lep sepa:"<<lep_sepa[p]<<"+-"<<sqrt(lep_sepa_err[p])<<endl;
         cout<<"lep kine:"<<lep_pt[p]<<"+-"<<sqrt(lep_pt_err[p])<<endl;
-        cout<<"pair ossf:"<<ossf[p]<<"+-"<<sqrt(ossf_err[p])<<endl;
         cout<<"J/psi veto:"<<Jpsi[p]<<"+-"<<sqrt(Jpsi_err[p])<<endl;
+        cout<<"pair ossf:"<<ossf[p]<<"+-"<<sqrt(ossf_err[p])<<endl;
         cout<<"jet number:"<<jet_num[p]<<"+-"<<sqrt(jet_num_err[p])<<endl;
         cout<<"b-tagging:"<<b_tag[p]<<"+-"<<sqrt(b_tag_err[p])<<endl;
         cout<<"4l mass:"<<m_llll[p]<<"+-"<<sqrt(m_llll_err[p])<<endl;
@@ -1556,8 +1454,8 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
         myfile<<"lep isolation:"<<iso[p]<<"+-"<<sqrt(iso_err[p])<<endl;
         myfile<<"lep sepa:"<<lep_sepa[p]<<"+-"<<sqrt(lep_sepa_err[p])<<endl;
         myfile<<"lep kine:"<<lep_pt[p]<<"+-"<<sqrt(lep_pt_err[p])<<endl;
-        myfile<<"pair ossf:"<<ossf[p]<<"+-"<<sqrt(ossf_err[p])<<endl;
         myfile<<"J/psi veto:"<<Jpsi[p]<<"+-"<<sqrt(Jpsi_err[p])<<endl;
+        myfile<<"pair ossf:"<<ossf[p]<<"+-"<<sqrt(ossf_err[p])<<endl;
         myfile<<"jet number:"<<jet_num[p]<<"+-"<<sqrt(jet_num_err[p])<<endl;
         myfile<<"b-tagging:"<<b_tag[p]<<"+-"<<sqrt(b_tag_err[p])<<endl;
         myfile<<"4l mass:"<<m_llll[p]<<"+-"<<sqrt(m_llll_err[p])<<endl;
@@ -1609,7 +1507,7 @@ void cutflow(TString samplePath = "samples/", TString treeName = "nominal", int 
     //cout<<type<<endl;
     //cout<<categories[type]<<endl;
     gStyle->SetOptStat("");
-    for(q = 0; q < obj; q++)
+    for(q = 0; q < obj - 20; q++)
     {
         c2->cd(q+1-8*int(q/8));
         // cout<<q+1-8*int(q/8)<<endl;
@@ -1721,9 +1619,13 @@ float PlaneAngle(TLorentzVector l_0,TLorentzVector l_1,TLorentzVector l_2,TLoren
     l_23.SetXYZ(l_2.Py()*l_3.Pz()-l_3.Py()*l_2.Pz(), l_3.Px()*l_2.Pz()-l_2.Px()*l_3.Pz(), l_3.Py()*l_2.Px()-l_2.Py()*l_3.Px());
 
     cs = l_01*l_23/sqrt((l_01*l_01)*(l_23*l_23));
+    // if(TMath::IsNaN(cs))  cout<<l_0.P()<<","<<l_1.P()<<endl;
 
     return cs;
 }
+
+void selection()
+{}
 
 int main(int argc, char **argv)
 {
