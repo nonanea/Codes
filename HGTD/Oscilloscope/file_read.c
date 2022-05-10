@@ -25,16 +25,15 @@ const TString plotStorePath = "Plots/";
 
 //bool dual_board = true;
 double threshold_1, threshold_2, t_cut, t_delta;
-// double transimpedance = 1.0;
+// double transimpedance = 0.4;
 // double transimpedance = 4.3226;//UCSCv1.1
 double transimpedance = 4.6929;//UCSCv1.4
-// double transimpedance = 16.571;//USTCv2
-// double transimpedance = 18.698;//USTCv2
+// double transimpedance = 16.262;//USTCv4 B5 cold
+// double transimpedance = 18.19;//USTCv4 B1
+// double transimpedance = 26.42;//USTCv2
 // double res_ref = 37.7;//T3.1
 // double res_ref_err = 0.83;
-double res_ref = 31.;//T1.1
-double res_ref_err = 1.0;
-const int N = 20;
+const int N = 34;
 
 double langaufun(double *x, double *par)
 {
@@ -226,12 +225,12 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
     gStyle->SetLegendBorderSize(0);
     gStyle->SetLegendTextSize(.03);
-    TCanvas *c1 = new TCanvas("c1", "Graph Draw Options", 1000, 800);
+    TCanvas *c1 = new TCanvas("c1", "Graph Draw Options", 900, 800);
     
     //TText *t = new TText();
-    c1->SetLeftMargin(0.25);
-    c1->SetRightMargin(0.2);
-    c1->SetTopMargin(0.2);
+    // c1->SetLeftMargin(0.25);
+    c1->SetRightMargin(0.05);
+    c1->SetTopMargin(0.05);
 
     TString dirname = filePath;
     dirname.ReplaceAll("/","");
@@ -259,6 +258,20 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     myfile.open (filePath + dirname + "/results.txt");
     myfile<<filePath + dirname<<endl;
 
+    double res_ref = 30.;//T1.1
+    double res_ref_err = 1.0;
+
+    if(filePath.Contains("/20/"))   //20 degree
+    {    
+        res_ref = 29.34;//T1.1
+        res_ref_err = 0.83;
+    }
+    else if(filePath.Contains("/M30/")) //-30 degree
+    {
+        res_ref = 33.93;//T1.1
+        res_ref_err = 0.81;
+    }
+    
     TFile *f= new TFile(filePath+dirname+".root","read");
     // TTree *t[4];
     // t[0] = (TTree*) f->Get("t1");
@@ -277,7 +290,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
     int dual_board = 1, event = 0;
     int n = 0, i = 0;
-    Float_t Amax[4], Tmax[4], noise[4], noise_amp[i], charge[4], charge_hw[4], charge_dw[4], CTD[4], CFD[4], ZCD[4], TOA_F[4], TOT[4], nentries, ped[4], risetime_ave[4], risetime[4], risetime_F[4], slope[4], linearity, delta_amax, jitter[4], ped_1[4], ped_2[4], slope_F[4], intercept_F[4], id[4];
+    Float_t Amax[4], Tmax[4], noise[4], tail_noise[4], noise_amp[i], charge[4], charge_hw[4], charge_dw[4], CTD[4], CFD[4], ZCD[4], TOA_F[4], TOT[4], nentries, ped[4], risetime_ave[4], risetime[4], risetime_F[4], slope[4], linearity, delta_amax, jitter[4], ped_1[4], ped_2[4], slope_F[4], intercept_F[4], id[4];
     //double Amax1, Tmax1, charge1, ped1, risetime1, slope1, noise1, CTD1, CFD1, ZCD1, TOF_CTD, TOF_ZCD, TOA_Ref;
     double risetime_ave_1, risetime_ave_2, jitter_ave_1, jitter_ave_2;
     double TOF_CFD_12, TOF_CFD_13, TOF_CFD_23;
@@ -297,31 +310,6 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
     int x[10000];
     double y[10000];
-
-    // for(i = 0; i < 4; i++)
-    // {
-    //     t[i]->SetBranchAddress("Amax",&Amax[i]);   
-    //     t[i]->SetBranchAddress("Tmax",&Tmax[i]);
-    //     t[i]->SetBranchAddress("pedestal",&ped[i]);
-    //     // t[i]->SetBranchAddress("ped_1",&ped_1[i]);
-    //     // t[i]->SetBranchAddress("ped_2",&ped_2[i]);
-    //     t[i]->SetBranchAddress("Noise",&noise[i]);
-    //     t[i]->SetBranchAddress("Noise_Amp",&noise_amp[i]);
-    //     t[i]->SetBranchAddress("Charge",&charge[i]);
-    //     t[i]->SetBranchAddress("Charge_HW",&charge_hw[i]);
-    //     t[i]->SetBranchAddress("Charge_DW",&charge_dw[i]);
-    //     t[i]->SetBranchAddress("CTD",&CTD[i]);
-    //     t[i]->SetBranchAddress("CFD",&CFD[i]);
-    //     // t[i]->SetBranchAddress("ZCD",&ZCD[i]);
-    //     // t[i]->SetBranchAddress("TOA_F",&TOA_F[i]);
-    //     t[i]->SetBranchAddress("risetime_ave",&risetime_ave[i]);
-    //     t[i]->SetBranchAddress("risetime",&risetime[i]);
-    //     // t[i]->SetBranchAddress("risetime_F",&risetime_F[i]);
-    //     // t[i]->SetBranchAddress("slope",&slope[i]);
-    //     t[i]->SetBranchAddress("ID",&id[i]);
-    //     // t[i]->SetBranchAddress("slope_F",&slope_F[i]);
-    //     // t[i]->SetBranchAddress("intercept_F",&intercept_F[i]);
-    // }
     
     t->SetBranchAddress("Amax",Amax);   
     t->SetBranchAddress("Tmax",Tmax);
@@ -329,6 +317,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     // t->SetBranchAddress("ped_1",ped_1);
     // t->SetBranchAddress("ped_2",ped_2);
     t->SetBranchAddress("Noise",noise);
+    t->SetBranchAddress("Tail_Noise",tail_noise);
     t->SetBranchAddress("Noise_Amp",noise_amp);
     t->SetBranchAddress("Charge",charge);
     t->SetBranchAddress("Charge_HW",charge_hw);
@@ -346,101 +335,180 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     // t->SetBranchAddress("intercept_F",intercept_F);
 
     double fitting[N] = {0}, error[N] = {0};
-    const char *plotname[N] = {"nentries",//0
-                                "amplitude_1",//1   DUT1
-                                "pedstal_1",//2
-                                "RMS_1",//3
-                                "charge_1",//4
-                                "risetime_1",//5
-                                "slope_1",//6
-                                "jitter_1",//7
-                                "amplitude_2",//8   DUT2
-                                "pedstal_2",//9
-                                "RMS_2",//10
-                                "charge_2",//11
-                                "risetime_2",//12
-                                "slope_2",//13
-                                "jitter_2",//14
-                                "tof_cfd_12",//15
-                                "tof_cfd_13",//16
-                                "tof_cfd_23",//17
-                                //"tof_corr"//18
-                                "noise_amplitude_1",//18
-                                "noise_amplitude_2"//19
+    const char *plotname[N] = {"nentries",      //0
+
+                                "amplitude_1",  //1   Ch2
+                                "pedstal_1",    //2
+                                "RMS_1",        //3
+                                "charge_1",     //4
+                                "risetime_1",   //5
+                                "slope_1",      //6
+                                "jitter_1",     //7
+
+                                "amplitude_2",  //8   Ch3
+                                "pedstal_2",    //9
+                                "RMS_2",        //10
+                                "charge_2",     //11
+                                "risetime_2",   //12
+                                "slope_2",      //13
+                                "jitter_2",     //14
+                                
+                                "amplitude_3",  //15   Ch0
+                                "pedstal_3",    //16
+                                "RMS_3",        //17
+                                "charge_3",     //18
+                                "risetime_3",   //19
+                                "slope_3",      //20
+                                "jitter_3",     //21
+                                
+                                "amplitude_4",  //22   Ch4
+                                "pedstal_4",    //23
+                                "RMS_4",        //24
+                                "charge_4",     //25
+                                "risetime_4",   //26
+                                "slope_4",      //27
+                                "jitter_4",     //28
+
+                                "tof_cfd_12",   //29
+                                "tof_cfd_13",   //30
+                                "tof_cfd_23",   //31
+                                //"tof_corr"    //32
+                                "noise_amplitude_1",//33
+                                "noise_amplitude_2"//34
                                 };
+
     const char *xaxis_name[N] = {"nentries",//0
-                                "Ampl_1 [mV]",//1   DUT1
-                                "Pedestal_1 [mV]",//2
-                                "Noise RMS_1 [mV]",//3
-                                "Collected charge_1 [fC]",//4
-                                "risetime_1 [ps]",//5
-                                "slope_1 [mV/ps]",//6
-                                "jitter_1 [ps]",//7
-                                "Ampl_2 [mV]",//8   DUT2
-                                "Pedestal_2 [mV]",//9
-                                "Noise RMS_2 [mV]",//10
-                                "Collected charge_2 [fC]",//11
-                                "risetime_2 [ps]",//12
-                                "slope_2 [mV/ps]",//13
-                                "jitter_2 [ps]",//14
+                                // "Ampl_DUT [mV]",            //1   Ch2
+                                // "Pedestal_DUT [mV]",        //2
+                                // "Noise RMS_DUT [mV]",       //3
+                                // "Collected charge_DUT [fC]",//4
+                                // "risetime_DUT [ps]",        //5
+                                // "slope_DUT [mV/ps]",        //6
+                                // "jitter_DUT [ps]",          //7
+                                "Ampl [mV]",            //1   Ch2
+                                "Pedestal [mV]",        //2
+                                "Noise RMS [mV]",       //3
+                                "Collected charge [fC]",//4
+                                "risetime [ps]",        //5
+                                "slope [mV/ps]",        //6
+                                "jitter [ps]",          //7
+
+                                "Ampl_Ref [mV]",            //8   Ch3
+                                "Pedestal_Ref [mV]",        //9
+                                "Noise RMS_Ref [mV]",       //10
+                                "Collected charge_Ref [fC]",//11
+                                "risetime_Ref [ps]",        //12
+                                "slope_Ref [mV/ps]",        //13
+                                "jitter_Ref [ps]",          //14
+                                
+                                "Ampl_DUT_2 [mV]",            //15   Ch0
+                                "Pedestal_DUT_2 [mV]",        //16
+                                "Noise RMS_DUT_2 [mV]",       //17
+                                "Collected charge_DUT_2 [fC]",//18
+                                "risetime_DUT_2 [ps]",        //19
+                                "slope_DUT_2 [mV/ps]",        //20
+                                "jitter_DUT_2 [ps]",          //21
+                                
+                                "Ampl_DUT_3 [mV]",            //22  Ch4
+                                "Pedestal_DUT_3 [mV]",        //23
+                                "Noise RMS_DUT_3 [mV]",       //24
+                                "Collected charge_DUT_3 [fC]",//25
+                                "risetime_DUT_3 [ps]",        //26
+                                "slope_DUT_3 [mV/ps]",        //27
+                                "jitter_DUT_3 [ps]",          //28
+
                                 // "TOF_CFD_12 [ps]",//15
-                                "Amplitude*TOT [mV*ns]",//15
-                                "TOT [ps]",//16
-                                "TOF_CFD_23 [ps]",//17
+                                "Amplitude*TOT [mV*ns]",//29
+                                "TOT [ps]",//30
+                                // "TOF_CFD_23 [ps]",//17
+                                "#DeltaTOA [ps]",//31
                                 //"TOF_CORR [ps]"//18
-                                "Noise_Ampl_1 [mV]",//18
-                                "Noise_Ampl_2 [mV]"//19
+                                "Noise_Ampl_DUT [mV]",//32
+                                "Noise_Ampl_Ref [mV]"//33
                                 };
     int maximum_bin = 0;
     float maximum = 0.0;
     int nbin[N] = {0};
     float xrange[N][2] = {{1,1},//0
-                            // {70,150},//1    DUT1    high gain
-                            // {200,300},//8    DUT2    very high gain
-                            {25,45},//1    DUT1    low gain
-                            // {3,8},//1    DUT1  noise
-                            // {150,150},//1    DUT1  laser high gain
-                            // {50,50},//1    DUT1  laser low gain
-                            {2,2},//2
-                            {2.,2.},//3
-                            // {25,40},//4 high gain
-                            // {45,75},//4 very high gain
-                            {4,8},//4   low gain
-                            // {50,50},//4   high gain laser
+                            {80,150},       //1    Ch2    high gain
+                            // {280,500},      //8    Ch2    high gain
+                            // {30,45},     //1    Ch2    low gain
+                            // {3,5},       //1    Ch2  noise
+                            // {150,150},   //1    Ch2  laser high gain
+                            // {20,20},     //1    Ch2  laser low gain
+                            {2,2},          //2
+                            {1.,1.},     //3
+                            // {3.,3.},      //3 high noise
+                            {15,35},     //4 high gain
+                            // {45,75},        //4 very high gain
+                            // {4,10},      //4   low gain
+                            // {500,500},   //4   high gain laser 
+                            // {10,10},        //4   low gain laser
+                            {100,150},      //5
+                            // {0.5,0.5},   //6
+                            {0.5,0.5},      //6
+                            {5,8},          //7
+                            // {10,20},     //7
 
-                            // {15,15},//4   low gain laser
-                            {100,150},//5
-                            // {0.5,0.5},//6
-                            {0.5,0.5},//6
-                            {60,200},//7
+                            // {280,500},      //8    Ch3    high gain
+                            {80,150},    //8    Ch3  low gain
+                            // {150,150},        //8    Ch3  laser low gain
+                            {2,2},          //9
+                            {1.,1.},     //10
+                            // {3.,3.},      //10 high noise
+                            {15,35},        //11    high gain
+                            // {5,15},      //11  low gain
+                            // {10,10},      //11  low gain
+                            {100,150},      //12
+                            {0.5,0.5},      //13
+                            {20,30},        //14
 
-                            {200,300},//8    DUT2    high gain
-                            // {15,50},//8    DUT2  low gain
-                            {2,2},//9
-                            {1.5,2.5},//10
-                            {15,25},//11    high gain
-                            // {5,15},//11  low gain
-                            {100,150},//12
-                            {0.5,0.5},//13
-                            {60,150},//14
-                            // {500,500},//15
-                            {1000,2000},//15
-                            {1000,2000},//16
-                            {500,500},//16
-                            // {200,200},//17
-                            // {200,200},//18
-                            {5,15},//18
-                            {5,15}//19
+                            // {250,400},      //15   Ch0  high gain
+                            // {60,140},    //15   Ch0  low gain
+                            {150,150},        //15    Ch0  laser low gain
+                            {2,2},          //16
+                            // {1.,1.},     //10
+                            {2.5,2.5},      //17 high noise
+                            // {15,25},        //18    high gain
+                            // {5,15},      //18  low gain
+                            {10,10},      //18  low gain
+                            {100,150},      //19
+                            {0.5,0.5},      //20
+                            {20,30},        //21
+
+                            // {250,400},      //22    Ch4    high gain
+                            // {60,140},    //22    Ch4  low gain
+                            {200,200},        //22    Ch4  laser low gain
+                            {2,2},          //23
+                            // {1.,1.},     //10
+                            {2.5,2.5},      //24 high noise
+                            {25,25},        //25    high gain
+                            // {5,15},      //25  low gain
+                            {100,150},      //26
+                            {0.5,0.5},      //27
+                            {20,30},        //28
+
+                            {200,200},      //29
+                            // {1000,2000}, //25
+                            // {1500,3500}, //26
+                            {200,200},      //30
+                            // {100,100},   //27
+                            {500,500},      //31
+                            // {5,15},      //28
+                            {3,5},          //32
+                            {5,15}          //33
                             };
     int value_range[2] = {0};
 
     TH1D *hList[N];
     for(i = 0; i < N; i++)
     {
-        value_range[0] = -500;
-        value_range[1] = 800;
+        // value_range[0] = -500;
+        // value_range[1] = 500;
+        value_range[0] = -3500;
+        value_range[1] = 3500;
 
-        if(i > 14 && i < 19)
+        if(i > 28 && i < 33)    //  Timing measurement
         {
             value_range[0] = -25000;
             value_range[1] = 25000;
@@ -455,20 +523,20 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         hList[i] = new TH1D(plotname[i], plotname[i], nbin[i], value_range[0], value_range[1]);
     }
 
-    const char *d2_plotname[10] = {"Amax1 vs. Tmax1",//0
-                                    "Noise1 vs. Noise2",//1
-                                    "Noise vs. Charge",//2
-                                    "Tmax1 vs. Tmax2",//3
-                                    "Amax2 vs. Tmax2",//4
-                                    "Collected charge vs. Risetime",//5
-                                    "Amax vs. Delta_max",//6
-                                    "Amax1 vs. Amax2",//7
-                                    "Amax vs. SNR"//8
+    const char *d2_plotname[10] = {"Amax1_vs_Tmax1",//0
+                                    "Noise1_vs_Noise2",//1
+                                    "Head_Noise_vs_Tail_Noise",//2
+                                    "Tmax1_vs_Tmax2",//3
+                                    "Amax2_vs_Tmax2",//4
+                                    "Collected charge_vs_Risetime",//5
+                                    "Amax_vs_Delta_max",//6
+                                    "Amax1_vs_Amax2",//7
+                                    "Amax_vs_SNR"//8
                                     };
-    const char *d2_axis_name[10][2] = {{"Amax1 [mV]","Tmax1 [ns]"},//0
+    const char *d2_axis_name[10][2] = {{"Amax_DUT [mV]","Tmax_DUT [ns]"},//0
                                         {"RMS1 [mV]","RMS2 [mV]"},//1
-                                        {"RMS [mV]","Collected Charge [fC]"},//2
-                                        {"Tmax1 [ns]","Tmax2 [ns]"},//3
+                                        {"Head_RMS [mV]","Tail_RMS [mV]"},//2
+                                        {"Tmax_DUT [ns]","Tmax_Ref [ns]"},//3
                                         {"Amax2 [mV]","Tmax2 [ns]"},//4
                                         {"Collected charge [fC]","Risetime [ps]"},//5
                                         {"Amax [mV]","Delta_max [mV]"},//6
@@ -477,24 +545,25 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                                         };
     int d2_nbin[10][2] = {{100,100},{100,100},{100,100},{100,100},{100,100},{100,100},{100,100},{100,100},{100,100}};
     float d2_xrange[10][2] = {
-                                {0,40},//0
+                                {0,800},//0
                                 {0,5},//1
-                                {0,1},//2
+                                {0,30.},//2
                                 // {-18,-12},//3
-                                {-1,1},//3
-                                {0,600},//4
-                                {0,40},//5
+                                {-2,2},//3
+                                {0,1000},//4
+                                {0,500},//5
                                 {0,100},//6
-                                {0,200},//7
+                                {0,2000},//7
                                 {0,20}//8
                                 };
     float d2_yrange[10][2] = {
                                 {-2,2},//0
+                                // {-25,25},//0
                                 // {-20,20},//0
                                 {0,5},//1
-                                {0,40},//2
+                                {0,30.},//2
                                 // {-18,-12},//3
-                                {-1,1},//3
+                                {-2,2},//3
                                 {-2,2},//4
                                 // {-20,20},//4
                                 {0,1000},//5
@@ -509,10 +578,10 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         hList_2d[i] = new TH2D(d2_plotname[i],d2_plotname[i],d2_nbin[i][0],d2_xrange[i][0],d2_xrange[i][1],d2_nbin[i][1],d2_yrange[i][0],d2_yrange[i][1]);
     }
 
-    TH2D *hped_amp = new TH2D("ped vs. amp","ped vs. amp",100,-10,20,100,0,50);
-    TH2D *hped_noise = new TH2D("ped vs. noise","ped vs. noise",100,0,20,100,0,10);
-    TH2D *hped_l_r = new TH2D("ped_l vs. ped_r","ped_l vs. ped_r",100,-10,20,100,-10,20);
-    TH2D *hA_ctd = new TH2D("Amax vs. TOF_CTD","Amax vs. TOF_CTD",100,50,300,100,-200,400);
+    TH2D *hped_amp = new TH2D("ped_vs_amp","ped_vs_amp",100,-10,20,100,0,50);
+    TH2D *hped_noise = new TH2D("ped_vs_noise","ped_vs_noise",100,0,20,100,0,10);
+    TH2D *hped_l_r = new TH2D("ped_l_vs_ped_r","ped_l_vs_ped_r",100,-10,20,100,-10,20);
+    TH2D *hA_ctd = new TH2D("Amax_vs_TOF_CTD","Amax_vs_TOF_CTD",100,50,300,100,-200,400);
 
     // a = -2.5;
     // double intercept_range[2] = {0};
@@ -523,55 +592,78 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     {
         // for(i = 0; i < 4; i++)   t[i]->GetEntry(n);
         t->GetEntry(n);
-        if(Tmax[1] > 1 || Tmax[1] < -1)   continue;
+        // if(Tmax[1] > -15 || Tmax[1] < -100)   continue;
         // cout<<Amax[1]*1000<<endl;
-        // if(noise_amp[1]*1000 < 6.2)  continue;
+        if(noise_amp[1]*1000 < threshold_1)  continue;
         // if(noise[1]*1000 > 3)  continue;
         // if(id[1] < 14000)    continue;
         // if(Amax[1]/noise[1] < 5)    continue;
         // if(Amax[2]/noise[2] < 5)    continue;
         // cout<<Amax[2]<<endl;
         // if(Tmax[2]-Tmax[1] < t_cut || Tmax[2]-Tmax[1] > t_cut + t_delta)   continue; //1ns width used
-        if (Amax[1]*1000 < threshold_1)   continue;
-        if (Amax[2]*1000 < threshold_2)   continue;
-        // if (Amax[1]*1000 > 150)   continue;
-        if (Amax[2]*1000 > 350)   continue;
+        // if (Amax[1]*1000 < threshold_1)   continue;
+        // if (Amax[2]*1000 < threshold_2)   continue;
+        // if (Amax[1]*1000 > 155)   continue;
+        // if (Amax[2]*1000 > 1000)   continue;
+        // if (Amax[0]*1000 > 1000)   continue;
+        // if (Amax[3]*1000 > 1000)   continue;
         //if(delta_amax < 5)  continue;
         //gr->SetPoint(n,n,ped*1000);
-        //if (Amax*1000 > 230)   continue;
+        // if (1000*TOT[1] > 4500)   continue;
 
-        risetime_ave_1 = risetime_ave[1];
-        risetime_ave_2 = risetime_ave[2];
+        // risetime_ave_1 = risetime_ave[1];
+        // risetime_ave_2 = risetime_ave[2];
         
         // cout<<Amax[1]<<endl;
         double variables[N] = {nentries,//0
-                                Amax[1]*1000,//1    DUT1
+                                Amax[1]*1000,//1    Ch2
                                 ped[1]*1000,//2
                                 noise[1]*1000,//3
-                                charge_dw[1]*1000/transimpedance,//4
+                                charge[1]*1000/transimpedance,//4
                                 risetime[1]*1000,//5
                                 // risetime[1]*1000,//5
                                 Amax[1]*0.2/risetime[1],//6
-                                1000*noise[1]/(Amax[1]*0.2/risetime_ave_1),//7
+                                1000*noise[1]/(Amax[1]*0.2/risetime_ave[1]),//7
                                 // 1000*noise[1]/slope[1],//7
 
-                                Amax[2]*1000,//8    DUT2
+                                Amax[2]*1000,//8    Ch3
                                 ped[2]*1000,//9
                                 noise[2]*1000,//10
                                 charge[2]*1000/transimpedance,//11
                                 risetime[2]*1000,//12
                                 Amax[2]*0.2/risetime[2],//13
-                                // 1000*noise[2]/(Amax[2]*0.2/risetime_ave_2),//14
-                                1000*noise[2]/slope[2],//14
+                                1000*noise[2]/(Amax[2]*0.2/risetime_ave[2]),//14
+                                
+                                Amax[0]*1000,//15    Ch0
+                                ped[0]*1000,//16
+                                noise[0]*1000,//17
+                                charge_dw[0]*1000/transimpedance,//18
+                                risetime[0]*1000,//19
+                                // risetime[1]*1000,//5
+                                Amax[0]*0.2/risetime[0],//20
+                                1000*noise[0]/(Amax[0]*0.2/risetime_ave[0]),//21
+                                
+                                Amax[3]*1000,//22    Ch4
+                                ped[3]*1000,//23
+                                noise[3]*1000,//24
+                                charge_dw[3]*1000/transimpedance,//25
+                                risetime[3]*1000,//26
+                                // risetime[1]*1000,//5
+                                Amax[3]*0.2/risetime[3],//27
+                                1000*noise[3]/(Amax[3]*0.2/risetime_ave[3]),//28
+                                // 1000*noise[1]/slope[1],//7
+
+                                // 1000*noise[2]/slope[2],//14
                                 // (CFD[0]-CFD[1])*1000,//15
-                                Amax[2]*1000*TOT[2],//15
+                                Amax[2]*1000*TOT[2],//29
                                 // (CFD[0]-CFD[2])*1000,//16
-                                1000*TOT[2],//16
-                                (CFD[1]-CFD[2])*1000,//17
+                                1000*TOT[2],//30
+                                // CFD[3]*1000,//17
+                                (CFD[1]-CFD[2])*1000,//31
                                 // (TOA_F[1]-TOA_F[2])*1000//17
                                 //TOA_Ref*1000,//12
-                                noise_amp[1]*1000,//18
-                                noise_amp[2]*1000//19
+                                noise_amp[1]*1000,//32
+                                noise_amp[2]*1000//33
                                 };
 
         // cout<<variables[13]<<endl;
@@ -583,13 +675,14 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         // hList[14]->Fill(TOF_CTD-TOF_corr);
 
         hList_2d[0]->Fill(Amax[1]*1000,Tmax[1]);
+        // hList_2d[0]->Fill(Amax[1]*1000,TOT[1]);
         hList_2d[1]->Fill(noise[1]*1000,noise[2]*1000);
-        hList_2d[2]->Fill(noise[1]*1000,charge[1]*1000/transimpedance);
+        hList_2d[2]->Fill(noise[1]*1000,tail_noise[1]*1000);
         hList_2d[3]->Fill(Tmax[1],Tmax[2]);
         hList_2d[4]->Fill(Amax[2]*1000,Tmax[2]);
         hList_2d[5]->Fill(charge[1]*1000/transimpedance,risetime[1]*1000);
         hList_2d[6]->Fill(Amax[1]*1000,delta_amax);
-        hList_2d[7]->Fill(Amax[1]*1000,Amax[2]*1000);
+        hList_2d[7]->Fill(Amax[1]*1000,Amax[0]*1000);
         hList_2d[8]->Fill(Amax[1]*1000,Amax[1]/noise[1]);
 
         //EoE = EoE + fabs(TOF_CFD*1000-TOF_mean);
@@ -609,7 +702,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
     for(i = 0; i < 9; i++)
     {
-        // Draw Amax vs. Tmax distribution
+        // Draw Amax vs Tmax distribution
         hList_2d[i]->GetXaxis()->SetTitle(d2_axis_name[i][0]);
         hList_2d[i]->GetYaxis()->SetTitle(d2_axis_name[i][1]);
         hList_2d[i]->GetXaxis()->SetNdivisions(505, kTRUE);
@@ -633,7 +726,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
             f3->SetParameter(1,1);
             f3->Draw("same");
             
-            pt=new TPaveText(0.7,0.75,0.3,0.6,"NDC");
+            pt=new TPaveText(0.8,0.85,0.4,0.7,"NDC");
             pt->SetBorderSize(0);
             pt->SetFillColor(0);
             pt->SetFillStyle(0);
@@ -647,7 +740,8 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         }
 
         c1->SaveAs(filePath + dirname + "/" + d2_plotname[i] + "_Dist.png");
-        c1->SaveAs(filePath + dirname + "/" + d2_plotname[i] + "_Dist.svg");
+        // c1->SaveAs(filePath + dirname + "/" + d2_plotname[i] + "_Dist.svg");
+        // c1->SaveAs(filePath + dirname + "/" + d2_plotname[i] + "_Dist.pdf");
         c1->Clear();
     }
 
@@ -660,6 +754,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     for(i = 0; i < N; i++)
     {    
         // cout<<plotname[i]<<endl;
+        if(!hList[i]->Integral())   hList[i]->SetBinContent(1,1);
         myfile<<plotname[i]<<endl;
 
         //hpeak->GetXaxis()->SetRangeUser(-1,1);
@@ -675,23 +770,27 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         //hList[i]->SetStats(1);
         hList[i]->Draw();
 
+        pt=new TPaveText(1.25,0.9,0.65,0.65,"NDC");
+        pt->SetBorderSize(0);
+        pt->SetFillColor(0);
+        pt->SetFillStyle(0);
+        pt->SetTextAlign(12);
+        pt->SetTextSize(0.035);
+
+        // if(i == 0 || i == 18)
         if(i == 0)
         {
-            pt=new TPaveText(1.2,0.75,0.6,0.6,"NDC");
-            pt->SetBorderSize(0);
-            pt->SetFillColor(0);
-            pt->SetFillStyle(0);
-            pt->SetTextAlign(12);
-            pt->SetTextSize(0.03);
-
-            text=pt->AddText(Form("Entries: %d",n));
-
-            pt->Draw();
+            if(i==0)    text=pt->AddText(Form("Entries: %d",n));
+            else    text=pt->AddText(Form("Entries: %d",event));
         }
 
         //amplitude, charge, tot 
-        else if(i == 1 || i==3 ||i == 4 || i == 7 || i == 8 || i == 11 || i == 14 || i == 15 || i == 16 || i == 18 || i == 19)
-        // else if(i == 8 || i == 15)//For Laser
+        else if(i == 1 || i == 4 || i == 7 || 
+        i == 8 || i == 11 || i == 14 ||
+        i == 15 || i == 18 || i == 21 ||
+        i == 22 || i == 25 || i == 28||
+        i == 12 || i == 33 || i == 34)
+        // else if(i == 29)//For Laser
         {
             // r = hList[i]->Fit("landau", "S", "C", maximum/3, maximum*3);
             // r = hList[i]->Fit("landau", "S", "C", maximum - xrange[i][0], maximum + xrange[i][1]);
@@ -728,20 +827,11 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
                 cout<<"charge:stat_err:"<<stat_err<<",cali_err:"<<cali_err<<endl;
             }
-    
-            pt=new TPaveText(1.2,0.75,0.6,0.6,"NDC");
-            pt->SetBorderSize(0);
-            pt->SetFillColor(0);
-            pt->SetFillStyle(0);
-            pt->SetTextAlign(12);
-            pt->SetTextSize(0.03);
 
             text=pt->AddText(Form("MPV: %.2f",langau_Peak));
             // text=pt->AddText(Form("MPV_Err: %.2f",MPV_err));
             text=pt->AddText(Form("Sigma: %.2f",langau_FWHM));
             text=pt->AddText(Form("Entries: %d",event));
-
-            pt->Draw();
         }
 
         else
@@ -752,23 +842,18 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
             sigma=r->Value(2);
             sigma_err=r->ParError(2);
 
-            if(i == 15) sigma_12 = sigma;
-            if(i == 16) sigma_13 = sigma;
-            if(i == 17)
+            if(i == 29) sigma_12 = sigma;
+            if(i == 30) sigma_13 = sigma;
+            if(i == 31)
             {
                 sigma_23 = sigma;
                 sigma_23_err = sigma_err;
             }
 
             fitting[i] = mean;
-            myfile<<"Mean:"<<mean<<",Mean_ERR_fitting:"<<mean_err<<",Mean_ERR:"<<sqrt(mean_err*mean_err+sigma*sigma/event)<<",Sigma:"<<sigma<<",Sigma_ERR:"<<sigma_err<<",Entries:"<<event<<endl;
-    
-            pt=new TPaveText(1.2,0.75,0.6,0.6,"NDC");
-            pt->SetBorderSize(0);
-            pt->SetFillColor(0);
-            pt->SetFillStyle(0);
-            pt->SetTextAlign(12);
-            pt->SetTextSize(0.03);
+            // myfile<<"Mean:"<<mean<<",Mean_ERR_fitting:"<<mean_err<<",Mean_ERR:"<<sqrt(mean_err*mean_err+sigma*sigma/event)<<",Sigma:"<<sigma<<",Sigma_ERR:"<<sigma_err<<",Entries:"<<event<<endl;
+                
+            myfile<<"Mean:"<<hList[i]->GetMean()<<",Mean_ERR_fitting:"<<0<<",Mean_ERR:"<<0<<",Sigma:"<<hList[i]->GetRMS()<<",Entries:"<<event<<endl;
 
             text=pt->AddText(Form("Mean: %.2f",mean));
             text=pt->AddText(Form("Mean_Err: %.2f",mean_err));
@@ -776,11 +861,12 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
             text=pt->AddText(Form("Sigma_Err: %.2f",sigma_err));
             text=pt->AddText(Form("Entries: %d",event));
 
-            pt->Draw();
         }
 
+        pt->Draw();
         c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.png");
         c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.svg");
+        c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.pdf");
         c1->Clear(); 
     }
 
@@ -796,8 +882,8 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     stat_err = sigma_23/sigma_2*sigma_23_err;
     ref_err = res_ref/sigma_2*res_ref_err;
 
-    jitter_ave_1 = 1000*fitting[3]/(fitting[1]*0.8/risetime_ave_1);
-    jitter_ave_2 = 1000*fitting[10]/(fitting[8]*0.8/risetime_ave_2);
+    jitter_ave_1 = 1000*fitting[3]/(fitting[1]*0.2/risetime_ave[1]);
+    jitter_ave_2 = 1000*fitting[10]/(fitting[8]*0.2/risetime_ave[2]);
 
     cout<<"charge_1:"<<fitting[4]<<",charge_2:"<<fitting[11]<<endl;
 
@@ -815,8 +901,8 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
     myfile<<"risetime_ave_1"<<endl<<risetime_ave_1<<endl;
     myfile<<"risetime_ave_2"<<endl<<risetime_ave_2<<endl;
-    myfile<<"slope_ave_1"<<endl<<fitting[1]*0.2/risetime_ave_1<<endl;
-    myfile<<"slope_ave_2"<<endl<<fitting[8]*0.2/risetime_ave_2<<endl;
+    myfile<<"slope_ave_1"<<endl<<fitting[1]*0.2/risetime_ave[1]<<endl;
+    myfile<<"slope_ave_2"<<endl<<fitting[8]*0.2/risetime_ave[2]<<endl;
     myfile<<"jitter_ave_1"<<endl<<jitter_ave_1<<endl;
     // myfile<<fitting[7]<<endl;
     myfile<<"jitter_ave_2"<<endl<<jitter_ave_2<<endl;

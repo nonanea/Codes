@@ -18,6 +18,8 @@ c1.SetRightMargin(0.15)
 c1.SetTopMargin(0.05)
 c1.SetBottomMargin(0.15)
 
+Z_mass = 91.1876
+
 colorList = [
     ROOT.kRed,
     ROOT.kBlue,
@@ -59,7 +61,7 @@ Zpp_id = array('i',[0])
 vp_id = array('i',[0])
 # lep3_id = array('i',[0])
 
-dir = "./Low_Mass/"
+dir = "./High_Mass/"
 # dir = "./g_test/"
 
 input_f_list = os.listdir(dir)
@@ -179,12 +181,13 @@ for input_f in input_f_list:
     # if "muvZp005" not in input_f and "muvZp017" not in input_f and "muvZp027" not in input_f and "muvZp039" not in input_f and "muvZp051" not in input_f and "muvZp060" not in input_f and "muvZp075" not in input_f:
     #     continue
 
-    if "root" not in input_f:
+    # if "mass_400.root" not in input_f:
+    if "05_" not in input_f:
         continue
 
     # if "100.root" not in input_f and "150.root" not in input_f and "250.root" not in input_f and "350.root" not in input_f and "500.root" not in input_f:
-    # if not input_f == "75.root":
-        # continue
+    # if not input_f == "01_mass_200.root":
+    #     continue
 
     # if "muv" in input_f or "data" in input_f or "16a" in input_f:
         # continue
@@ -245,9 +248,17 @@ for input_f in input_f_list:
     met_px = array('f',[0.])
     met_py = array('f',[0.])
 
-    mT = array('f',[0.])
     mll_1 = array('f',[0.])
     mll_2 = array('f',[0.])
+    mll_Z1 = array('f',[0.])
+    mll_Z2 = array('f',[0.])
+
+    mT = array('f',[0.])
+    mT_vl = array('f',[0.])
+    mT_Wvl = array('f',[0.])
+    
+    dR_1 = array('f',[0.])
+    dR_2 = array('f',[0.])
     
     m_Zp = array('f',[0.])
     m_W = array('f',[0.])
@@ -256,6 +267,7 @@ for input_f in input_f_list:
     n_bjets = array('i',[0])
 
     weight = array('f',[0.])
+    weight_g = array('f',[0.])
     xsec = array('f',[0.])
 
     f_out = ROOT.TFile("Outputs/"+input_f,"recreate")
@@ -289,9 +301,17 @@ for input_f in input_f_list:
     tt.Branch('met_px',met_px,'met_px_f/F')
     tt.Branch('met_py',met_py,'met_py_f/F')
 
-    tt.Branch('mT',mT,'mT/F')
     tt.Branch('mll_1',mll_1,'mll_1/F')
     tt.Branch('mll_2',mll_2,'mll_2/F')
+    tt.Branch('mll_Z1',mll_Z1,'mll_Z1/F')
+    tt.Branch('mll_Z2',mll_Z2,'mll_Z2/F')
+
+    tt.Branch('mT',mT,'mT/F')
+    tt.Branch('mT_vl',mT_vl,'mT_vl/F')
+    tt.Branch('mT_Wvl',mT_Wvl,'mT_Wvl/F')
+
+    tt.Branch('dR_1',dR_1,'dR_1/F')
+    tt.Branch('dR_2',dR_2,'dR_2/F')
     
     tt.Branch('m_Zp',m_Zp,'m_Zp/F')
     tt.Branch('m_W',m_W,'m_W/F')
@@ -300,13 +320,20 @@ for input_f in input_f_list:
     tt.Branch('n_bjets',n_bjets,'n_bjets/I')
 
     tt.Branch('weight',weight,'weight/F')
+    tt.Branch('weight_g',weight_g,'weight_g/F')
     tt.Branch('xsection',xsec,'xsec/F')
 
     xsec_flag = 0
-    # for xsec_value in xsec_list:
-    #     if float(input_f[-8:-5]) == float(xsec_value.split()[0]):
-    #         xsec[0] = float(xsec_value.split()[3])/float(xsec_value.split()[2])/float(xsec_value.split()[2])
-    #         xsec_flag = 1
+    weight[0] = 1.0/t.GetEntries()
+
+    for xsec_value in xsec_list:
+        # print float(input_f[input_f.find("mass")+5:-5])
+        if float(input_f[input_f.find("mass")+5:-5]) == float(xsec_value.split()[0]):
+            print "xsec:",xsec_value.split()[2],",coupling:",xsec_value.split()[1]
+            xsec[0] = float(xsec_value.split()[2])*1e6
+            weight_g[0] = xsec[0]/float(xsec_value.split()[1])/float(xsec_value.split()[1])/t.GetEntries()
+            # print weight_g[0]
+            xsec_flag = 1
 
     # if xsec_flag == 0:
     #     print "Xsec not found!"
@@ -315,10 +342,9 @@ for input_f in input_f_list:
     # f_out.Close()
 
     # weight[0] = 1.0*xsec[0]/t.GetEntries()
-    weight[0] = 1.0/t.GetEntries()
-    # print "xsec:",float(xsec_value.split())[3],",coupling:",float(xsec_value.split())[2]
 
     j = 0
+    k = 0
 
     # print "Total number:",t.GetEntries()
     for i in range(t.GetEntries()):
@@ -332,11 +358,11 @@ for input_f in input_f_list:
         lep1 = lep[l_order[1][0]]
         lep2 = lep[l_order[0][0]]
 
-        # if fabs(lep0.Eta()) > 3 or fabs(lep1.Eta()) > 3 or fabs(lep2.Eta()) > 3:
-        #     continue
+        if fabs(lep0.Eta()) > 2.5 or fabs(lep1.Eta()) > 2.5 or fabs(lep2.Eta()) > 2.5:
+            continue
 
-        # if lep2.Pt() < 3:
-        #     continue
+        if lep2.Pt() < 3:
+            continue
 
         # if lep0.Pt() < 20:
         #     continue
@@ -348,31 +374,104 @@ for input_f in input_f_list:
 
         # print(lep[l_order[0][0]].Pt(),lep[l_order[1][0]].Pt(),lep[l_order[2][0]].Pt())
 
-        if lep_id[0][0] != lep_id[1][0]:
-            if lep_id[0][0] != lep_id[2][0]:
-                if (lep[0]+lep[1]).M() > (lep[0]+lep[2]).M():
-                    ll_1 = lep[0] + lep[1]
-                    ll_2 = lep[0] + lep[2]
-                else:
-                    ll_2 = lep[0] + lep[1]
-                    ll_1 = lep[0] + lep[2]
-            else:
-                if (lep[0]+lep[1]).M() > (lep[1]+lep[2]).M():
-                    ll_1 = lep[0] + lep[1]
-                    ll_2 = lep[1] + lep[2]
-                else:
-                    ll_2 = lep[0] + lep[1]
-                    ll_1 = lep[1] + lep[2]
-        else:
-            if (lep[0]+lep[2]).M() > (lep[1]+lep[2]).M():
-                ll_1 = lep[0] + lep[2]
-                ll_2 = lep[1] + lep[2]
-            else:
-                ll_2 = lep[0] + lep[2]
-                ll_1 = lep[1] + lep[2]
+        # if lep_id[0][0] != lep_id[1][0]:
+        #     if lep_id[0][0] != lep_id[2][0]:
+        #         if (lep[0]+lep[1]).M() > (lep[0]+lep[2]).M():
+        #             ll_1 = lep[0] + lep[1]
+        #             ll_2 = lep[0] + lep[2]
+        #         else:
+        #             ll_2 = lep[0] + lep[1]
+        #             ll_1 = lep[0] + lep[2]
+
+        #     else:
+        #         if (lep[0]+lep[1]).M() > (lep[1]+lep[2]).M():
+        #             ll_1 = lep[0] + lep[1]
+        #             ll_2 = lep[1] + lep[2]
+        #         else:
+        #             ll_2 = lep[0] + lep[1]
+        #             ll_1 = lep[1] + lep[2]
+        # else:
+        #     if (lep[0]+lep[2]).M() > (lep[1]+lep[2]).M():
+        #         ll_1 = lep[0] + lep[2]
+        #         ll_2 = lep[1] + lep[2]
+        #     else:
+        #         ll_2 = lep[0] + lep[2]
+        #         ll_1 = lep[1] + lep[2]
         
+        if lep_id[0][0]*lep_id[1][0] == lep_id[0][0]*lep_id[2][0]:
+            os = 0
+        else:
+            os = 2 if lep_id[0][0]*lep_id[1][0] > lep_id[0][0]*lep_id[2][0] else 1
+
+        ss_1 = 0.0
+        ss_2 = -1.0
+
+        for k in range(3):
+            if k != os:
+                ss_1 = k
+                if ss_2 < 0:
+                    ss_2 = ss_1
+
+        ll_1 = lep[os] + lep[ss_1]
+        ll_2 = lep[os] + lep[ss_2]
+        
+        if fabs(ll_1.M()-Z_mass) < fabs(ll_2.M()-Z_mass):
+        # if sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2)) > sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2)):
+            mll_Z1[0] = ll_1.M()
+            mll_Z2[0] = ll_2.M()
+
+            mT_Wvl[0] = pow(lep[ss_2].Et() + nv.Et(), 2) - pow( lep[ss_2].Px() + nv.Px() , 2) - pow ( lep[ss_2].Py() + nv.Py() , 2)
+            if mT_Wvl[0] > 0:   mT_Wvl[0] = sqrt(mT_Wvl[0])
+            else:   mT_Wvl[0] = 0
+            # dR_1[0] = sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2))
+            # dR_2[0] = sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2))
+        else:
+            mll_Z2[0] = ll_1.M()
+            mll_Z1[0] = ll_2.M()
+
+            mT_Wvl[0] = pow(lep[ss_1].Et() + nv.Et(), 2) - pow( lep[ss_1].Px() + nv.Px() , 2) - pow ( lep[ss_1].Py() + nv.Py() , 2)
+            if mT_Wvl[0] > 0:   mT_Wvl[0] = sqrt(mT_Wvl[0])
+            else:   mT_Wvl[0] = 0
+        
+        if ll_1.M() > ll_2.M():
+        # if sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2)) > sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2)):
+            mll_1[0] = ll_1.M()
+            mll_2[0] = ll_2.M()
+
+            mT_vl[0] = pow(lep[ss_2].Et() + nv.Et(), 2) - pow( lep[ss_2].Px() + nv.Px() , 2) - pow ( lep[ss_2].Py() + nv.Py() , 2)
+            # mT_vl[0] = sqrt(mT_vl[0])
+            if mT_vl[0] > 0:   mT_vl[0] = sqrt(mT_vl[0])
+            else:   mT_vl[0] = 0
+            # dR_1[0] = sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2))
+            # dR_2[0] = sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2))
+        else:
+            mll_2[0] = ll_1.M()
+            mll_1[0] = ll_2.M()
+
+            mT_vl[0] = pow(lep[ss_1].Et() + nv.Et(), 2) - pow( lep[ss_1].Px() + nv.Px() , 2) - pow ( lep[ss_1].Py() + nv.Py() , 2)
+            if mT_vl[0] > 0:   mT_vl[0] = sqrt(mT_vl[0])
+            else:   mT_vl[0] = 0
+            # dR_2[0] = sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2))
+            # dR_1[0] = sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2))
+
         # if ll_2.M() < 4:
         #     continue
+            
+        # if mll_2[0] < 4:
+        #     continue
+
+        dR = 0
+        dRR = -1.0
+
+        for k in range(3):
+            if k != os:
+                # dR = sqrt(pow(lep[k].Phi()*lep[k].Phi()-lep[os].Phi()*lep[os].Phi(),2)+pow(lep[k].Eta()*lep[k].Eta()-lep[os].Eta()*lep[os].Eta(),2))
+                dR = sqrt(pow(lep[k].Phi()-lep[os].Phi(),2)+pow(lep[k].Eta()-lep[os].Eta(),2))
+                if dRR < 0:
+                    dRR = dR
+        
+        dR_1[0] = dR if dR >= dRR else dRR
+        dR_2[0] = dR if dRR >= dR else dRR
 
         # h[0].Fill(ll_1.M())
         # h[1].Fill(ll_2.M())
@@ -405,8 +504,8 @@ for input_f in input_f_list:
         mts = pow(lep[0].Et() + lep[1].Et() + lep[2].Et() + nv.Et(), 2) - pow( lep[0].Px() + lep[1].Px() + lep[2].Px() + nv.Px() , 2) - pow ( lep[0].Py() + lep[1].Py() + lep[2].Py() + nv.Py() , 2)
         mT[0] = sqrt(mts)
 
-        mll_1[0] = ll_1.M()
-        mll_2[0] = ll_2.M()
+        # mll_1[0] = ll_1.M()
+        # mll_2[0] = ll_2.M()
 
         m_Zp[0] = Zp.M()
         m_W[0] = (lep0+lep1+lep2+nv).M()
