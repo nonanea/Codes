@@ -1,0 +1,46 @@
+USTC-ATLAS-Upgrade    Phase2-upgrade
+
+zvb-ary2h-4g
+
+powershell.exe -Command '& "C:\Program Files\VcXsrv\vcxsrv.exe" -ac -multiwindow -wgl'
+
+chmod 777 /var/run/docker.sock
+
+git add .
+git commit -a -m "comments"
+git push
+
+python  -m  SimpleHTTPServer
+
+16137779527 Abcd1234
+
+taskkill /IM explorer.exe /F
+
+sudo service docker start
+docker run --rm -it atlas/analysisbase
+
+docker run --rm -it hepstore/rivet:3.1.2
+
+docker run -it gitlab-registry.cern.ch/trexstats/trexfitter:latest
+
+https://bigpanda.cern.ch/user/?user=chihao%20li&days=60
+
+docker login gitlab-registry.cern.ch -u <CERN-username> -p <gitlab-token>
+Trex  3-ushyw98yhGf4EDpPcH
+
+https://bigpanda.cern.ch/user/?user=chihao%20li&date_from=2022-02-10&date_to=2022-02-22&display_limit_tasks=197
+
+txu@210.45.78.27 pAzFP7xUiu8=
+202.141.163.217
+
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
+conda config --set show_channel_urls yes
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+
+git init truth
+cd truth/
+git config core.sparsecheckout true
+echo 'MC16*' >> .git/info/sparse-checkout
+git remote add origin https://gitlab.cern.ch/lium/z-to-dark-photon-plus-dark-higgs.git
+git pull origin master
