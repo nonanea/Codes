@@ -7,18 +7,18 @@ from math import fabs,pow,sqrt,isnan
 from array import array
 from operator import itemgetter
 
-def Angle(x1,y1,x2,y2):
-    angle = (x1*x2+y1*y2)/sqrt(x1*x1+y1*y1)/sqrt(x2*x2+y2*y2)
-    return(angle)
+# def Angle(x1,y1,x2,y2):
+#     angle = (x1*x2+y1*y2)/sqrt(x1*x1+y1*y1)/sqrt(x2*x2+y2*y2)
+#     return(angle)
 
-def nv_pz(a,b,c):
-    x = symbols('x')
-    # root_list = solve( (a + sqrt( x**2 + b ) )**2 - x**2 - b - c, x )
-    # return root[0].evalf().as_real_imag()[0]
-    # print solve( (a + sympy.sqrt( x*x + b ) )*(a + sympy.sqrt( x*x + b ) ) - x*x - b - c, x )[0].evalf().as_real_imag()[0]
-    # print solve( (a + sympy.sqrt( x*x + b ) )**2 - x*x - b - c, x )
-    print a*a,b,c
-    return
+# def nv_pz(a,b,c):
+#     x = symbols('x')
+#     # root_list = solve( (a + sqrt( x**2 + b ) )**2 - x**2 - b - c, x )
+#     # return root[0].evalf().as_real_imag()[0]
+#     # print solve( (a + sympy.sqrt( x*x + b ) )*(a + sympy.sqrt( x*x + b ) ) - x*x - b - c, x )[0].evalf().as_real_imag()[0]
+#     # print solve( (a + sympy.sqrt( x*x + b ) )**2 - x*x - b - c, x )
+#     print a*a,b,c
+#     return
 
 #     root_list = solve( (a + sqrt( x**2 + b ) )**2 - x**2 - b - c, x )
     # for root in root_list:
@@ -31,6 +31,7 @@ ROOT.gErrorIgnoreLevel = ROOT.kError
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gStyle.SetOptTitle(0)
 ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptFit(1111)
 
 c1 = ROOT.TCanvas("c1", "canvas", 1000, 800)
 
@@ -39,20 +40,24 @@ c1.SetRightMargin(0.05)
 c1.SetTopMargin(0.05)
 c1.SetBottomMargin(0.15)
 
+lumi = 1.0
 W_mass = 80.379
 Z_mass = 91.1876
 Zp_mass = [ 5, 9, 15, 19, 23, 27, 31, 35, 39, 45, 51, 54, 60, 66, 69, 75 ]
+# Zp_mass = [ 5, 9, 15, 19, 23, 27, 31, 35, 39 ]
+# Zp_mass = [ 39, 45, 51, 54, 60, 66, 69, 75 ]
 
 WZ_list = [364253,364284,363358]
 ZZ_list = [345666,345723,364285,364250,364283,345283,245706,363356,364254]
 WW_list = [345718]
-VVV_list = [364242,364253,364244,364245,364246,364247,364248,364249]
-Zjets_list = [361107,361666,361667]
+VVV_list = [364242,364243,364244,364245,364246,364247,364248,364249]
+Zjets_list = [361107,361666,361667,361106,361664,361665]
+# Zjets_list = [364100,364101,364102,364103,364104,364105,364106,364107,364108,364109,364110,364111,364112,364113,364198,364199,364200,364201,364202,364203]
 t_list = [410644,410645,410658,410659]
 Wt_list = [410646,410647]
 tt_list = [410472]
 ttV_list = [410155,410156,410157,410081,410218,410219]
-Zgamma_list = [364505,364506,364507,364508,364509]
+Zgamma_list = [364500,364501,364502,364503,364504,364505,364506,364507,364508,364509]
 # extra_list = [345705,345706,345714,364283,364284,364286,364287,364288,364289,364290,361108]
 
 f_xsec = "Xsec/3muv.txt"
@@ -85,13 +90,27 @@ xsec = array('f',[0.])
 
 sample_list = os.listdir(".")
 
+# h_mll = ROOT.TH1F("m_ll","m_ll",500,0,100)
+gaus = ROOT.TF1("gaus","gaus(0)+gaus(3)",0,100)
+gaus.SetLineColor(ROOT.kRed)
+
+bin = [0.8,2.1,3,3,5,5,5,5,7,7,7,7,12,12,12,12]
+
+h_list = [[ROOT.TH1F()] for i in range(len(Zp_mass))]
+for i in range(len(h_list)):
+    h_list[i] = ROOT.TH1F(str(Zp_mass[i]),str(Zp_mass[i]),int(2500/bin[i]),0,100)
+
 for sample in sample_list:
-    if "0g0" in sample:   continue
-    # if "data" not in sample:
-    if "_muv" not in sample :
-    # if "_muv" not in sample and "_mc16" not in sample:
+    if "muv" in sample:   continue
+    if "root" not in sample:
+    # if "361107" not in sample and "361666" not in sample and "361667" not in sample :
+    # if "36428" not in sample:
         continue
-        
+
+    # if "Loose" not in sample and "LowPt" not in sample and "Med" not in sample:    continue
+    # if "data" in sample or "muv" in sample: continue
+    # if int(sample[:6]) not in Zjets_list and int(sample[:6]) not in Zgamma_list:   continue
+
     print(sample + " processing")
 
     f_in = ROOT.TFile(sample)
@@ -119,10 +138,10 @@ for sample in sample_list:
 
     h = [ROOT.TH1F() for i in range(len(h_name))]
 
-    # for i in range(len(h_name)):
-    #     # h_name = "hist" + str(i)
-    #     h[i] = ROOT.TH1F(h_name[i],h_name[i],20,0,80)
-    #     # h[i].SetLineColor(i+2)
+    for i in range(len(h_name)):
+        # h_name = "hist" + str(i)
+        h[i] = ROOT.TH1F(h_name[i],h_name[i],20,0,80)
+        # h[i].SetLineColor(i+2)
 
     # output variables initialization
 
@@ -186,6 +205,7 @@ for sample in sample_list:
     weight = array('f',[0.])
     weight_g = array('f',[0.])
     xsec = array('f',[0.])
+    # lumi = array('f',[0.])
     
     mass = array('f',[0.])
     bkg = array('i',[0])
@@ -252,14 +272,26 @@ for sample in sample_list:
     tt.Branch('weight',weight,'weight/F')
     tt.Branch('weight_g',weight_g,'weight_g/F')
     tt.Branch('xsection',xsec,'xsec/F')
+    # tt.Branch('lumi',lumi,'lumi/F')
 
     tt.Branch('mass',mass,'mass/F')
     tt.Branch('bkg',bkg,'bkg/I')
 
     xsec_flag = 0
+    
+    if "mc16a" in sample:   lumi = 36.0746
+    elif "mc16d" in sample: lumi = 43.8137
+    elif "mc16e" in sample: lumi = 58.4501
 
+    # if "data" not in sample and "muv" not in sample:
+    #     if int(sample[:6]) in Zjets_list:    lumi = 139
+    # lumi = 36.0746
+    
     if "muv" in sample:
         mass[0] = float(sample[sample.find("muvZp")+5:sample.find("muvZp")+8])
+        id = Zp_mass.index(mass[0])
+        if mass[0] > 10: continue
+        # print id
         for xsec_value in xsec_list:
             # print float(sample[sample.find("mass")+5:-5])
             if float(sample[sample.find("muvZp")+5:sample.find("muvZp")+8]) == float(xsec_value.split()[0]):
@@ -270,6 +302,7 @@ for sample in sample_list:
                 xsec_flag = 1
 
     # f_out.Close()
+    # if mass[0] > 19: continue
 
     # print(mass[0])
     
@@ -282,15 +315,13 @@ for sample in sample_list:
 
     for i in range(t.GetEntries()):
         t.GetEntry(i)
-        # if i > 10:
-        #     break
+        # if i > 10:    break
         
         # if isnan(t.weight): continue
         
         # if fabs(lep_id[0][0]+lep_id[1][0]+lep_id[2][0]) != 39:
         #     continue
-        if fabs(lep_id[0][0]) != 13 or fabs(lep_id[1][0]) != 13 or fabs(lep_id[2][0]) != 13:
-            continue
+        # if fabs(lep_id[0][0]) != 13 or fabs(lep_id[1][0]) != 13 or fabs(lep_id[2][0]) != 13:    continue
         #     # print(lep_id[0][0],lep_id[1][0],lep_id[2][0])
 
         if fabs(lep_cid[0][0]+lep_cid[1][0]+lep_cid[2][0]) > 1: continue
@@ -313,8 +344,7 @@ for sample in sample_list:
         lep1 = lep[l_order[1][0]]
         lep2 = lep[l_order[0][0]]
 
-        if lep0.Pt() < 20:
-            continue
+        if lep0.Pt() < 20:    continue
 
         # print(lep[l_order[0][0]].Pt(),lep[l_order[1][0]].Pt(),lep[l_order[2][0]].Pt())
 
@@ -369,8 +399,6 @@ for sample in sample_list:
             if mT_Wvl[0] > 0:   mT_Wvl[0] = sqrt(mT_Wvl[0])
             else:   mT_Wvl[0] = 0
 
-            dPhi_2[0] = (lep[os]+lep[ss_1]).Phi() - lep[ss_2].Phi()
-            dR_2[0] = sqrt( pow( (lep[os]+lep[ss_1]).Phi()-lep[ss_2].Phi(),2 )+pow( (lep[os]+lep[ss_1]).Eta()-lep[ss_2].Eta(),2) )
             # dR_1[0] = sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2))
             # dR_2[0] = sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2))
         else:
@@ -382,8 +410,6 @@ for sample in sample_list:
             if mT_Wvl[0] > 0:   mT_Wvl[0] = sqrt(mT_Wvl[0])
             else:   mT_Wvl[0] = 0
 
-            dPhi_2[0] = (lep[os]+lep[ss_2]).Phi() - lep[ss_1].Phi()
-            dR_2[0] = sqrt( pow( (lep[os]+lep[ss_2]).Phi()-lep[ss_1].Phi(),2 )+pow( (lep[os]+lep[ss_2]).Eta()-lep[ss_1].Eta(),2) )
             # dR_2[0] = sqrt(pow(lep[ss_1].Phi()-lep[os].Phi(),2)+pow(lep[ss_1].Eta()-lep[os].Eta(),2))
             # dR_1[0] = sqrt(pow(lep[ss_2].Phi()-lep[os].Phi(),2)+pow(lep[ss_2].Eta()-lep[os].Eta(),2))
         
@@ -404,7 +430,10 @@ for sample in sample_list:
             else: LT[0] = lep[ss_2].Pt()
 
             dPhi_1[0] = (lep[os]+lep[ss_1]).Phi() - lep[ss_2].Phi()
+            dPhi_2[0] = (lep[os]+lep[ss_2]).Phi() - lep[ss_1].Phi()
+
             dR_1[0] = sqrt( pow( (lep[os]+lep[ss_1]).Phi()-lep[ss_2].Phi(),2 )+pow( (lep[os]+lep[ss_1]).Eta()-lep[ss_2].Eta(),2) )
+            dR_2[0] = sqrt( pow( (lep[os]+lep[ss_2]).Phi()-lep[ss_1].Phi(),2 )+pow( (lep[os]+lep[ss_2]).Eta()-lep[ss_1].Eta(),2) )
 
             # dPhi_1[0] = Angle( (lep[os]+lep[ss_1]).Px() + t.met_px_tst, (lep[os]+lep[ss_1]).Py() + t.met_py_tst, lep[ss_2].Px(), lep[ss_2].Py())
             # dPhi_2[0] = Angle( (lep[os]+lep[ss_1]).Px() , (lep[os]+lep[ss_1]).Py()  , t.met_px_tst, t.met_py_tst)
@@ -425,7 +454,10 @@ for sample in sample_list:
             else: LT[0] = lep[ss_1].Pt()
 
             dPhi_1[0] = (lep[os]+lep[ss_2]).Phi() - lep[ss_1].Phi()
-            dR_1[0] = sqrt( pow( (lep[os]+lep[ss_2]).Phi()-lep[ss_1].Phi(),2 )+pow( (lep[os]+lep[ss_2]).Eta()-lep[ss_1].Eta(),2) )
+            dPhi_2[0] = (lep[os]+lep[ss_1]).Phi() - lep[ss_2].Phi()
+
+            dR_1[0] = sqrt( pow( (lep[os]+lep[ss_2]).Phi()-lep[ss_1].Phi(),2 ) + pow( (lep[os]+lep[ss_2]).Eta()-lep[ss_1].Eta(),2) )
+            dR_2[0] = sqrt( pow( (lep[os]+lep[ss_1]).Phi()-lep[ss_2].Phi(),2 ) + pow( (lep[os]+lep[ss_1]).Eta()-lep[ss_2].Eta(),2) )
 
             # dPhi_1[0] = Angle( (lep[os]+lep[ss_2]).Px() + t.met_px_tst, (lep[os]+lep[ss_2]).Py() + t.met_py_tst, lep[ss_1].Px(), lep[ss_1].Py())
             # dPhi_2[0] = Angle( (lep[os]+lep[ss_2]).Px() , (lep[os]+lep[ss_2]).Py()  , t.met_px_tst, t.met_py_tst)
@@ -449,8 +481,7 @@ for sample in sample_list:
         # if ll_2.M() < 4:
         #     continue
             
-        if mll_2[0] < 4:
-            continue
+        if mll_2[0] < 4:    continue
 
         # dR = 0
         # dRR = -1.0
@@ -468,12 +499,6 @@ for sample in sample_list:
         # print nv_pz( (lep[0]+lep[1]+lep[2]).E(), t.met_tst*t.met_tst, pow( (lep[0]+lep[1]+lep[2]).E(), 2) - pow( (lep[0]+lep[1]+lep[2]).M(), 2 ) + W_mass*W_mass )
         # nv_pz(1.0,2.0,3.0)
         # print (t.met_tst*t.met_tst - t.met_px_tst*t.met_px_tst - t.met_py_tst*t.met_py_tst)/t.met_tst
-
-        # h[0].Fill(ll_1.M())
-        # h[1].Fill(ll_2.M())
-        # h[2].Fill(lep1.Pt())
-        # h[3].Fill(lep2.Pt())
-        # h[4].Fill(lep3.Pt())
 
         # fill branch
 
@@ -537,8 +562,8 @@ for sample in sample_list:
         # mT[0] = sqrt(mts)
         # if fabs(t.met_tst*t.met_tst-t.met_px_tst*t.met_px_tst-t.met_py_tst*t.met_py_tst)>0.01: print(t.met_tst*t.met_tst-t.met_px_tst*t.met_px_tst-t.met_py_tst*t.met_py_tst)
 
-        if isnan(t.weight_trig): triSF = 1.0
-        else: triSF = t.weight_trig
+        # if isnan(t.weight_trig): triSF = 1.0
+        # else: triSF = t.weight_trig
 
         if "data" in sample:
             bkg[0] = 100
@@ -546,10 +571,17 @@ for sample in sample_list:
             weight[0] = 1.0
         elif "muv" in sample:
             bkg[0] = 99
-            # weight[0] = t.weight/hInfo.GetBinContent(2)
-            weight[0] = triSF * t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp/hInfo.GetBinContent(2) #   no trigger SF
+            weight[0] = t.weight/hInfo.GetBinContent(2)*lumi
+            
+            if fabs( ll_1.M() - mass[0] ) <  fabs( ll_2.M() - mass[0] ):    h_list[id].Fill(ll_1.M())
+            else:    h_list[id].Fill(ll_2.M())
+
+            # h[1].Fill(ll_2.M())
+            # weight[0] = triSF * t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp/hInfo.GetBinContent(2) #   no trigger SF
         elif "_mc16" in sample:
-            weight[0] = triSF * t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp*hInfo.GetBinContent(1)*2.0/hInfo.GetEntries()/hInfo.GetBinContent(2)   #   no trigger SF
+            # weight[0] = t.weight*hInfo.GetBinContent(1)*2.0/hInfo.GetEntries()/hInfo.GetBinContent(2)*lumi
+            # print t.weight/hInfo.GetBinContent(2), t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp/hInfo.GetBinContent(2)
+            weight[0] = t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp*hInfo.GetBinContent(1)*2.0/hInfo.GetEntries()/hInfo.GetBinContent(2) * lumi   #   no trigger SF
             xsec[0] = t.weight_xsection
             
             mass[0] = Zp_mass[i%len(Zp_mass)]
@@ -567,13 +599,13 @@ for sample in sample_list:
             else:    bkg[0] = 6
         else:
             bkg[0] = 99
-            # weight[0] = t.weight/hInfo.GetBinContent(2)
-            weight[0] = triSF * t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp/hInfo.GetBinContent(2) #   no trigger SF
+            weight[0] = t.weight/hInfo.GetBinContent(2)*lumi
+            # weight[0] = t.weight_pileup * t.weight_gen * t.weight_jvt * t.weight_jets * t.weight_exp/hInfo.GetBinContent(2)*lumi #   no trigger SF
             xsec[0] = t.weight_xsection
 
 
-        if lep1_pt[0] < 10 or lep2_pt[0] < 6 or t.n_jets > 0 or mll_1[0] > 80:   continue
-        # print t.weight,hInfo.GetBinContent(1),hInfo.GetEntries(),hInfo.GetBinContent(2)
+        # if lep1_pt[0] < 10 or lep2_pt[0] < 6 or t.n_jets > 0 or mll_1[0] > 80:   continue
+        # if lep1_pt[0] < 10 or lep2_pt[0] < 6:   continue
         # if lep2.Pt() < 10:    continue
         notrigger+=1
         try:
@@ -582,19 +614,60 @@ for sample in sample_list:
         except:
             tt.Fill()
         
+        # h[0].Fill(ll_1.M())
+        # h[1].Fill(ll_2.M())
+        # h[2].Fill(lep1.Pt())
+        # h[3].Fill(lep2.Pt())
+        # h[4].Fill(lep3.Pt())
+
         j+=1
         
     # print xsec[0]
-
     try:
         print "Total number:",t.GetEntries(),"Event number:",j,"Trig Eff:",j*1.0/notrigger
         f.write(sample + "," + str(j*1.0/t.GetEntries()) + "\n")
     except ZeroDivisionError:
         print "No events"
+    # try:
+    #     print "Total number:",t.GetEntries(),"Event number:",j,"Trig Eff:",j*1.0/notrigger
+    #     f.write(sample.replace(".root","") + "," + str(j*1.0/t.GetEntries()) + "," + str(h_mll.GetMean()) + "," + str(h_mll.GetRMS()) + "," + str(h_mll.GetEntries()) + "\n")
+    # except ZeroDivisionError:
+    #     print "No events"
+
+    # if "muv" in sample and Zp_mass[len(h_list)] != mass[0]:
+    if "muv" in sample and "16e" in sample:
+        # h_list[id].GetXaxis().SetRangeUser( h_list[id].GetMean() - 3.0*h_list[id].GetRMS(),h_list[id].GetMean() + 3.0*h_list[id].GetRMS() )
+        h_list[id].GetXaxis().SetRangeUser( h_list[id].GetMean() - bin[id],h_list[id].GetMean() + bin[id] )
+        h_list[id].GetXaxis().SetTitle("Reco Zp Mass [GeV]")
+        h_list[id].GetYaxis().SetTitle("Events")
+        h_list[id].Draw("hist")
+
+        gaus.SetParameters(h_list[id].GetMaximum()/2.0,h_list[id].GetMean()+0.5,h_list[id].GetRMS(),h_list[id].GetMaximum()/2.0,h_list[id].GetMean()-0.5,h_list[id].GetRMS())
+
+        # r = h_list[id].Fit(gaus,"QS","C", h_list[id].GetMean() - 3.0*h_list[id].GetRMS(),h_list[id].GetMean() + 3.0*h_list[id].GetRMS() )
+        r = h_list[id].Fit(gaus,"QS","C", h_list[id].GetMean() - bin[id],h_list[id].GetMean() + bin[id] )
+
+        gaus.SetParameter(0,r.Value(0))
+        gaus.SetParameter(1,r.Value(1))
+        gaus.SetParameter(2,r.Value(2))
+        gaus.SetParameter(3,r.Value(3))
+        gaus.SetParameter(4,r.Value(4))
+        gaus.SetParameter(5,r.Value(5))
+        gaus.Draw("same")
+
+        f.write( str(mass[0]) + "," + str(r.Value(2)*r.Value(0)/(r.Value(0)+r.Value(3)) + r.Value(5)*r.Value(3)/(r.Value(0)+r.Value(3))) + "," + str(r.Value(2)*r.Value(0)/(r.Value(0)+r.Value(3))) + "," + str(r.Value(5)*r.Value(3)/(r.Value(0)+r.Value(3))) + "\n")
+
+        c1.SaveAs("Plots/" + str(int(mass[0])) + "Zp.png")
+        c1.Clear()
+        # print "==============================",h_list[id].GetMean(),h_list[id].GetRMS(),h_list[id].GetEntries()
+
+
     tt.Write()
     f_out.Close()
     t.Delete()
 
+# for i in range(len(h_list)):
+#     print "==============================",Zp_mass[i],h_list[i].GetMean(),h_list[i].GetRMS(),h_list[i].GetEntries()
 # for i in range(len(h_name)):
 #     # h_name = "hist" + str(i)
 #     h[i].GetXaxis().SetTitle(h_name[i])

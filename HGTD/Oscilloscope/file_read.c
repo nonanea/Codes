@@ -27,9 +27,9 @@ const TString plotStorePath = "Plots/";
 double threshold_1, threshold_2, t_cut, t_delta;
 // double transimpedance = 0.4;
 // double transimpedance = 4.3226;//UCSCv1.1
-double transimpedance = 4.6929;//UCSCv1.4
+// double transimpedance = 4.6929;//UCSCv1.4
 // double transimpedance = 16.262;//USTCv4 B5 cold
-// double transimpedance = 18.19;//USTCv4 B1
+double transimpedance = 18.19;//USTCv4 B1
 // double transimpedance = 26.42;//USTCv2
 // double res_ref = 37.7;//T3.1
 // double res_ref_err = 0.83;
@@ -255,8 +255,12 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     //cout<<position<<","<<target_dir_tail<<","<<target_dir<<endl;
 
     ofstream myfile;
-    myfile.open (filePath + dirname + "/results.txt");
+    myfile.open(filePath + dirname + "/results.txt");
     myfile<<filePath + dirname<<endl;
+
+    // ofstream temp;
+    // temp.open("tmp.csv");
+    // temp<<"Amplitude,Charge,RMS,delta_TOA"<<endl;
 
     double res_ref = 30.;//T1.1
     double res_ref_err = 1.0;
@@ -385,9 +389,10 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                                 // "risetime_DUT [ps]",        //5
                                 // "slope_DUT [mV/ps]",        //6
                                 // "jitter_DUT [ps]",          //7
-                                "Ampl [mV]",            //1   Ch2
+                                // "Ampl [mV]",            //1   Ch2
+                                "Amplitude [mV]",            //1   Ch2
                                 "Pedestal [mV]",        //2
-                                "Noise RMS [mV]",       //3
+                                "RMS Noise [mV]",       //3
                                 "Collected charge [fC]",//4
                                 "risetime [ps]",        //5
                                 "slope [mV/ps]",        //6
@@ -430,18 +435,18 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     float maximum = 0.0;
     int nbin[N] = {0};
     float xrange[N][2] = {{1,1},//0
-                            {80,150},       //1    Ch2    high gain
-                            // {280,500},      //8    Ch2    high gain
+                            // {80,150},       //1    Ch2    high gain
+                            {280,510},      //1    Ch2    high gain
                             // {30,45},     //1    Ch2    low gain
                             // {3,5},       //1    Ch2  noise
                             // {150,150},   //1    Ch2  laser high gain
                             // {20,20},     //1    Ch2  laser low gain
                             {2,2},          //2
-                            {1.,1.},     //3
-                            // {3.,3.},      //3 high noise
+                            // {1.,1.},     //3
+                            {3.,3.},      //3 high noise
                             {15,35},     //4 high gain
                             // {45,75},        //4 very high gain
-                            // {4,10},      //4   low gain
+                            // {10,25},      //4   low gain
                             // {500,500},   //4   high gain laser 
                             // {10,10},        //4   low gain laser
                             {100,150},      //5
@@ -450,12 +455,12 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                             {5,8},          //7
                             // {10,20},     //7
 
-                            // {280,500},      //8    Ch3    high gain
-                            {80,150},    //8    Ch3  low gain
+                            {280,510},      //8    Ch3    high gain
+                            // {80,150},    //8    Ch3  low gain
                             // {150,150},        //8    Ch3  laser low gain
                             {2,2},          //9
-                            {1.,1.},     //10
-                            // {3.,3.},      //10 high noise
+                            // {1.,1.},     //10
+                            {3.,3.},      //10 high noise
                             {15,35},        //11    high gain
                             // {5,15},      //11  low gain
                             // {10,10},      //11  low gain
@@ -491,7 +496,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                             {200,200},      //29
                             // {1000,2000}, //25
                             // {1500,3500}, //26
-                            {200,200},      //30
+                            {500,500},      //30
                             // {100,100},   //27
                             {500,500},      //31
                             // {5,15},      //28
@@ -547,7 +552,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
     float d2_xrange[10][2] = {
                                 {0,800},//0
                                 {0,5},//1
-                                {0,30.},//2
+                                {0,100.},//2
                                 // {-18,-12},//3
                                 {-2,2},//3
                                 {0,1000},//4
@@ -561,7 +566,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                                 // {-25,25},//0
                                 // {-20,20},//0
                                 {0,5},//1
-                                {0,30.},//2
+                                {0,100.},//2
                                 // {-18,-12},//3
                                 {-2,2},//3
                                 {-2,2},//4
@@ -594,26 +599,29 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         t->GetEntry(n);
         // if(Tmax[1] > -15 || Tmax[1] < -100)   continue;
         // cout<<Amax[1]*1000<<endl;
-        if(noise_amp[1]*1000 < threshold_1)  continue;
+        // if(noise_amp[1]*1000 < threshold_1)  continue;
         // if(noise[1]*1000 > 3)  continue;
+        if(tail_noise[1]*1000 > 20)  continue;
         // if(id[1] < 14000)    continue;
         // if(Amax[1]/noise[1] < 5)    continue;
         // if(Amax[2]/noise[2] < 5)    continue;
         // cout<<Amax[2]<<endl;
         // if(Tmax[2]-Tmax[1] < t_cut || Tmax[2]-Tmax[1] > t_cut + t_delta)   continue; //1ns width used
-        // if (Amax[1]*1000 < threshold_1)   continue;
-        // if (Amax[2]*1000 < threshold_2)   continue;
-        // if (Amax[1]*1000 > 155)   continue;
-        // if (Amax[2]*1000 > 1000)   continue;
+        if (Amax[1]*1000 < threshold_1)   continue;
+        if (Amax[2]*1000 < threshold_2)   continue;
+        if (Amax[1]*1000 > 900)   continue;
+        if (Amax[2]*1000 > 900)   continue;
         // if (Amax[0]*1000 > 1000)   continue;
         // if (Amax[3]*1000 > 1000)   continue;
         //if(delta_amax < 5)  continue;
-        //gr->SetPoint(n,n,ped*1000);
+        // if ((CFD[1]-CFD[2])*1000 < 100)   continue;
         // if (1000*TOT[1] > 4500)   continue;
 
         // risetime_ave_1 = risetime_ave[1];
         // risetime_ave_2 = risetime_ave[2];
         
+        // temp<<Amax[1]*1000<<","<<charge[1]*1000/transimpedance<<","<<noise[1]*1000<<","<<(CFD[1]-CFD[2])*1000<<endl;
+
         // cout<<Amax[1]<<endl;
         double variables[N] = {nentries,//0
                                 Amax[1]*1000,//1    Ch2
@@ -657,7 +665,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
                                 // (CFD[0]-CFD[1])*1000,//15
                                 Amax[2]*1000*TOT[2],//29
                                 // (CFD[0]-CFD[2])*1000,//16
-                                1000*TOT[2],//30
+                                1000*TOT[1],//30
                                 // CFD[3]*1000,//17
                                 (CFD[1]-CFD[2])*1000,//31
                                 // (TOA_F[1]-TOA_F[2])*1000//17
@@ -775,7 +783,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         pt->SetFillColor(0);
         pt->SetFillStyle(0);
         pt->SetTextAlign(12);
-        pt->SetTextSize(0.035);
+        pt->SetTextSize(0.045);
 
         // if(i == 0 || i == 18)
         if(i == 0)
@@ -830,7 +838,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
 
             text=pt->AddText(Form("MPV: %.2f",langau_Peak));
             // text=pt->AddText(Form("MPV_Err: %.2f",MPV_err));
-            text=pt->AddText(Form("Sigma: %.2f",langau_FWHM));
+            text=pt->AddText(Form("FWHM: %.2f",langau_FWHM));
             text=pt->AddText(Form("Entries: %d",event));
         }
 
@@ -866,7 +874,7 @@ void file_read(TString filePath, double threshold_1 = 0.0, double threshold_2 = 
         pt->Draw();
         c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.png");
         c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.svg");
-        c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.pdf");
+        // c1->SaveAs(filePath + dirname + "/" + plotname[i] + "_Dist.pdf");
         c1->Clear(); 
     }
 
