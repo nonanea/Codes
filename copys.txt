@@ -44,3 +44,20 @@ git config core.sparsecheckout true
 echo 'MC16*' >> .git/info/sparse-checkout
 git remote add origin https://gitlab.cern.ch/lium/z-to-dark-photon-plus-dark-higgs.git
 git pull origin master
+
+613Net: wyswys2 Qyz@126236
+
+step 1: 当报错wget download failed时，到远程目标机器上看下下载链接
+ps -ef|grep wget
+root     29373 29372  0 02:16 ?        00:00:00 wget --tries=1 --connect-timeout=7 --dns-timeout=7 -nv -O vscode-server-linux-x64.tar.gz https://update.code.visualstudio.com/commit:26076a4de974ead31f97692a0d32f90d735645c0/server-linux-x64/stable
+找一台可以科学上网的机器手工下载
+wget  -O vscode-server-linux-x64.tar.gz https://update.code.visualstudio.com/commit:26076a4de974ead31f97692a0d32f90d735645c0/server-linux-x64/stable
+step 2: 将手工下载的文件上传到远程目标机器上，我这里放在根目录暂存
+cp vscode-server-linux-x64.tar.gz /vscode-server-linux-x64.tar.gz
+step 3: 修改本地机器上的脚本文件 C:\Users\administrator\.vscode-insiders\extensions\ms-vscode-remote.remote-ssh-0.35.0\out\extension.js
+搜索 "wget ${function(e){return e?"--tries=1":""}(!!d)} --connect-timeout=7 --dns-timeout=7 -nv -O vscode-server-linux-$VSCODE_ARCH.tar.gz https://update.code.visualstudio.com/commit:$COMMIT_ID/server-linux-$VSCODE_ARCH${u?"-web":""}/${r}" （双引号以内内容）
+替换为 "cp /vscode-server-linux-x64.tar.gz ./vscode-server.tar.gz"（双引号以内内容）
+
+rucio download --rses BNL-OSG2_SCRATCHDISK user.chihao.29309219._000001.EventSummary_PFLOW.root
+
+fa145c4759025297df4f5ddd4994cf9fef9d52fd

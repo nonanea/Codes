@@ -1,5 +1,6 @@
 import ROOT
 import os
+import sys
 from array import array
 
 ROOT.gErrorIgnoreLevel = ROOT.kError
@@ -19,6 +20,7 @@ c1.SetRightMargin(0.20)
 indir = "Data/"
 plotPath = "Plots/"
 
+x = sys.argv[1]
 f_list = os.listdir(indir)
 
 # x = []
@@ -30,10 +32,11 @@ for f in f_list:
     A = [[],[],[]]
     # if not "csv" in f and not "txt" in f:    continue
     if not "txt" in f:    continue
-    # if "charge" in f:    continue
+    if "charge" in f:    continue
 
     out = f.replace(".csv","").replace(".txt","")
 
+    # f_out = open(plotPath + out + "_" + x + ".csv","a")
     f_out = open(plotPath + out + ".csv","a")
     f_out.seek(0)
     f_out.truncate()
@@ -59,7 +62,9 @@ for f in f_list:
         A[1].append( int(p[0][7:]) )
         A[2].append( float(p[1]) )
 
-        if int(p[0][3:6]) == 735:
+        if int(p[0][3:6]) == int(x):
+        # if int(p[0][7:]) == int(x):
+        # if int(p[0][7:]) == 2000:
             # if int(p[0][7:]) < 2079 and int(p[0][7:]) > 2040:
             f_out.write( p[0][3:6] + "," + p[0][7:] + "," + p[1] + "\n")
 
@@ -87,5 +92,37 @@ for f in f_list:
     # h_2d.SetMarkerSize(0.2)
     h_2d.Draw("COLZ")
 
-    c1.SaveAs(plotPath + out + "_2d.png")
-    c1.SaveAs(plotPath + out + "_2d.svg")
+    # c1.SaveAs(plotPath + out + "_2d.png")
+    # c1.SaveAs(plotPath + out + "_2d.svg")
+    c1.Clear()
+    
+####    fraction calculation
+f_out = open("fra_"+ str(x) +".csv","a")
+f_out.seek(0)
+f_out.truncate()
+
+Pos = [[],[]]
+Var = [[],[],[],[]]
+
+for i in range(4):
+    f = plotPath + "amplitude_" + str(i+1) + ".csv"
+    print f
+    with open(f,"r") as text:
+        content = text.read().splitlines()
+
+        for var in content:
+            var = var.split(",")
+            Var[i].append(float(var[2]))
+            if i == 0:
+                Pos[0].append(var[0])
+                Pos[1].append(var[1])
+
+for i,var in enumerate(Var[0]):
+    # print Pos[0][i],Pos[1][i],Var[0][i]
+    fra1 = (Var[0][i]-Var[1][i])/(Var[0][i]+Var[1][i])
+    # fra2 = (Var[2][i]-Var[3][i])/(Var[2][i]+Var[3][i])
+    fra2 = (Var[0][i]+Var[2][i]-Var[1][i]-Var[3][i])/(Var[0][i]+Var[2][i]+Var[1][i]+Var[3][i])
+    # fra2 = (Var[0][i]-Var[2][i]+Var[1][i]-Var[3][i])/(Var[0][i]+Var[2][i]+Var[1][i]+Var[3][i])
+    f_out.write( Pos[0][i] + "," + Pos[1][i] + "," + str(fra1) + "," + str(fra2) + "\n" )
+
+f_out.close()

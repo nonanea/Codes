@@ -11,12 +11,15 @@ if not os.path.exists(plot_dir):
 
 subdir_list = os.listdir(dir)
 
+# subdir_list = [
+# ]
+
 # print(subdir)
-for subdir in subdir_list:
+for i,subdir in enumerate(subdir_list):
     # if "735_" not in subdir:    continue
     path = os.path.join(dir,subdir,"")
-    # command = "python3 oscilloscope_raw.py -dir "+path
-    # os.system(command)
+    command = "python3 oscilloscope_raw.py -dir "+path
+    os.system(command)
     command = "root -l -b -q file_read.c'(\""+ path.replace("Data/","") + "\",20,50,-0.7)'"
     # print(command)
     os.system(command)

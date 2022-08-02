@@ -71,7 +71,7 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
     vector<TString> dirList;
     while ((entry = (char *)gSystem->GetDirEntry(plotDir)))
     {
-        if(TString(entry).Contains("."))continue;
+        if(TString(entry).Contains("."))    continue;
         //if(!TString(entry).Contains("HV120"))continue;
         dirList.push_back(entry);
     } 
@@ -84,7 +84,8 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
     myfile.open(plotStorePath + plotType + "Results.csv");
     
     for(int it=0;it<dirList.size();it++)
-    {   entry = dirList[it];     
+    {
+        entry = dirList[it];     
         void *subDir = gSystem->OpenDirectory(dataPath+entry);    
         TString subDir_str = entry;
         nDir++;
@@ -99,9 +100,12 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
             //if(i++>10)break;
             //cout<<i<<endl;
             txtFile = subEntry;
+
             vector<double> xlist,ylist,Tlist,Alist;
-            if (txtFile.EndsWith(ext))
+            if (!txtFile.EndsWith("txt")) continue;
+            if (txtFile.Contains("C2"))
             {
+                // cout<<txtFile<<endl;
                 TString txtFileFullPath = dataPath + entry + "/" +txtFile;
                 TString plotInfo = txtFile;
                 plotInfo = plotInfo.ReplaceAll(".txt", "");
@@ -115,27 +119,25 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
                 for (n = 0; n < tree->GetEntries(); n++)
                 {
                     tree->GetEntry(n);
-                    //cout << Time << "  " << Ampl << " " << endl;
+                    // cout << Time << "  " << Ampl << " " << endl;
                     xlist.push_back(Time);
-                    // ylist.push_back(-Ampl);
-                    Alist.push_back(Ampl);
+                    ylist.push_back(Ampl);
+                    // Alist.push_back(Ampl);
                 }
 
                  PedestalAndNoise(ylist,&ped,&noise);
-                 //cout<<"ped="<<ped<<endl;
-//                 cout<<"noise="<<noise<<endl;
+                //  cout<<"ped="<<ped<<endl;
+                // cout<<"noise="<<noise<<endl;
 
                 //deduct the pedestal
                 for( n = 0; n < ylist.size(); n++){
                     Alist.push_back(ylist[n]-ped);
                     gr->SetPoint(n, xlist[n], Alist[n]);
                 }
-
-
                 
                 //get the peak information
                 Peak(xlist,Alist,&Tmax,&Amax,&Max,threshold);
-                cout<<"Max="<<Max<<endl;
+                // cout<<"Max="<<Max<<endl;
                 //cout<<"Tmax="<<Tmax<<endl;
                 double charge =  Charge(xlist,Alist,Max,threshold);
                 //cout<<"charge:"<<charge<<endl;
@@ -149,7 +151,7 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
                 hCharge->Fill(charge*1000);
                 hChargeCal->Fill(charge*1000.0/7.3733);
                 hTOT->Fill(TOT(xlist,Alist,threshold));
-
+                myfile<<TString(entry)<<","<<Amax*1000<<","<<charge*1000<<endl;
             }
         }
      
@@ -210,6 +212,7 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
         legend->SetFillStyle(0);
         legend->SetHeader(Form(dirList[ii]+", MPV:%3.2f,MPV_Err:%2.2f%%,Mean:%.2f, Entries:%d",MPV,100*MPVErr/MPV,hpeak->GetMean(),nentries), "C");
         legend->Draw();
+        
         cout<<"draw Peak for" << dirList[ii]  << " ii:"<<ii<<endl;       
 
     }
@@ -252,7 +255,7 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
      //double center = hpeak->GetBinCenter(hpeak->GetMaximumBin());
      //hpeak->GetXaxis()->SetTitle("Prop.to Voltage.Integral [V*s]");
      
-        myfile<<hcharge->GetMean()<<endl;
+        // myfile<<hcharge->GetMean()<<endl;
 
         cout<<"draw Charge for" << dirList[ii]  << " ii:"<<ii<<endl;
     }
@@ -325,9 +328,6 @@ void oscilloscope_spec(TString dataPath, bool multi = true)
     c1->SaveAs(plotStorePath + plotType + "charge_Dist_Cal.pdf");
     delete c1;  
     
-    
-    
-    
     c1 = new TCanvas("c1", "Graph Draw Options", 1000, 800);
     for(int ii=0;ii<hTOTList.size();ii++)
     { 
@@ -388,10 +388,12 @@ void PedestalAndNoise(vector<double> ylist,double *ped,double *noise)
 {
     int i;
     double mean = 0,stdev = 0;
+    // cout<<ylist.size()<<endl;
     for(i = 0; i < ylist.size()/4; i++){
         mean+=ylist[i];
     }
     mean=mean/(i+1);
+    // cout<<mean<<endl;
 
     for(i = 0; i < ylist.size()/4; i++){
         stdev+=(ylist[i]-mean)*(ylist[i]-mean);
@@ -404,12 +406,12 @@ void PedestalAndNoise(vector<double> ylist,double *ped,double *noise)
 
 void Peak(vector<double> xlist, vector<double> Alist, double *Tmax, double *Amax, int *Max, double threshold)
 {
-    int k = 0, m = 0;
+    int k = 0;
     double amax = threshold;
 
-    m = xlist.size()/2;
+    // m = xlist.size()/2;
     //cout<<"m="<<m<<endl;
-    if (m != 0)
+    if (xlist.size() != 0)
     {
         for(k = 0; k < xlist.size(); k++)    
         {
@@ -425,9 +427,9 @@ void Peak(vector<double> xlist, vector<double> Alist, double *Tmax, double *Amax
     }
 }
 
-double Charge(vector<double> xlist, vector<double> Alist, int Max, double threshold){
-
-    
+double Charge(vector<double> xlist, vector<double> Alist, int Max, double threshold)
+{
+   
     int k = 0, length = 0;
     double tot = 0, integral_voltage = 0, delta_T = 0;
     double window = 0;
@@ -438,7 +440,7 @@ double Charge(vector<double> xlist, vector<double> Alist, int Max, double thresh
     cout<<"delta_T="<<delta_T<<endl;
     if (length != 0)
     {
-        for(k = Max - 3.0/delta_T; k < Max + 3.0/delta_T + 1; k++)
+        for(k = Max - 5/delta_T; k < Max + 5/delta_T + 1; k++)
         {
             // if(Alist[k] > threshold)
             // {

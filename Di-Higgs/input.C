@@ -80,7 +80,7 @@ void input()
   
   float bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_0__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_1__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_2__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_3__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_4__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_5__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_6__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_7__1up_f,bTagSF_weight_DL1r_77_FT_EFF_Eigen_B_8__1up_f,bTagSF_weight_DL1r_77_FT_EFF_extrapolation__1up_f,bTagSF_weight_DL1r_77_FT_EFF_extrapolation_from_charm__1up_f,lepSF_SF_El_ChargeMisID_LooseAndBLayerLH_FCLoose_STAT_UP_AT_f,lepSF_SF_El_ChargeMisID_TightLH_FCLoose_STAT_UP_AT_f,lepSF_SF_El_ChargeMisID_LooseAndBLayerLH_FCLoose_SYST_UP_AT_f,lepSF_SF_El_ChargeMisID_TightLH_FCLoose_SYST_UP_AT_f,lepSF_SF_El_Reco_UP_AT_f,lepSF_SF_El_ID_LooseAndBLayerLH_UP_AT_f,lepSF_SF_El_ID_TightLH_UP_AT_f,lepSF_SF_El_Iso_FCLoose_UP_AT_f,lepSF_SF_El_PLVLoose_UP_AT_f,lepSF_SF_El_PLVTight_UP_AT_f,lepSF_SF_Mu_TTVA_STAT_UP_AT_f,lepSF_SF_Mu_TTVA_SYST_UP_AT_f,lepSF_SF_Mu_ID_Loose_STAT_UP_AT_f,lepSF_SF_Mu_ID_Medium_STAT_UP_AT_f,lepSF_SF_Mu_ID_Loose_SYST_UP_AT_f,lepSF_SF_Mu_ID_Medium_SYST_UP_AT_f,lepSF_SF_Mu_ID_Loose_STAT_LOWPT_UP_AT_f,lepSF_SF_Mu_ID_Medium_STAT_LOWPT_UP_AT_f,lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT_f,lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT_f,lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT_f,lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT_f,lepSF_SF_Mu_PLVLoose_UP_AT_f,lepSF_SF_Mu_PLVTight_UP_AT_f,custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up_f,custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_MUON_EFF_TrigStatUncertainty__1up_f,custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_MUON_EFF_TrigSystUncertainty__1up_f,custTrigSF_TightElMediumMuID_FCLooseIso_DLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up_f,custTrigSF_TightElMediumMuID_FCLooseIso_DLT_MUON_EFF_TrigStatUncertainty__1up_f,custTrigSF_TightElMediumMuID_FCLooseIso_DLT_MUON_EFF_TrigSystUncertainty__1up_f;
 
-  Int_t i, j, k, l, bkg, dsid, dsid_s, nbin = 8;
+  Int_t i, j, k, l, bkg, dsid, dsid_s, nbin = 20;
   Double_t range[2] = {-1.0,1.0};
   Double_t bin_edges[17] = {-0.6,-0.5,-0.4,-0.35,-0.3,-0.25,-0.2,-0.15,-0.1,-0.05,0,0.05,0.1,0.15,0.2,0.3,0.4};
   Double_t ZH[4][2] = {{0.35,1.97959887981},{0.55,1.28266811371},{0.75,1.24872112274},{0.95,0.531870007515}};
@@ -106,16 +106,18 @@ void input()
 
   Float_t bdt_eval_s = 0.0;
   // double sum;
-  k = 4;
+  // region[4] = "Zjets_6";
+  // k = 4;
   // for(k = 0; k == 0; k++)
-  // for(k = 0; k < N; k++)
+  for(k = 0; k < N; k++)
   {
     for(i = 0; i < N+1; i++)
-    // i = 3;
+    // i = 5;
     {
+      // file_path = "Ntuples/";
       file_path = "Ntuples/";
-      // file_path = "test/";
       file_path = file_path + region[k] + "/" + process_list[i] + "/";
+      // cout<<file_path<<endl;
       
       output_path = "Results/";
       output = new TFile(output_path + region[k] + "/" + process_list[i]+".root","recreate");
@@ -140,6 +142,11 @@ void input()
           tBDT->Branch(TString(region[k]) + "BDT",&bdt_eval_s);
           tBDT->Branch("weight",&weight_b);
           // tBDT->Branch("dsid",&dsid_s);
+
+          histBDT = new TH1F( syst_name + "_BDT",process_list[i],nbin,range[0],range[1]);
+          // histBDT = new TH1F( syst_name + "_" + TString(region[k]) + "BDT",process_list[i],nbin,range[0],range[1]);
+          histBDT->SetDirectory(0);
+          // histBDT = new TH1F( syst_name + "_" + TString(region[k]) + "BDT",process_list[i],16,bin_edges);
 
           if(ntuple.Contains("nominal"))
           {
@@ -221,7 +228,7 @@ void input()
             tBDT->Branch("lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT",&lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT_f);
             tBDT->Branch("lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT",&lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT_f);
             tBDT->Branch("lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT_f);
-            tBDT->Branch("lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT_f);
+            // tBDT->Branch("lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT_f);
             // tBDT->Branch("lepSF_SF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_PLVLoose_UP_AT_f);
             tBDT->Branch("lepSF_SF_Mu_PLVTight_UP_AT",&lepSF_SF_Mu_PLVTight_UP_AT_f);
             tBDT->Branch("custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up",&custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up_f);
@@ -239,9 +246,6 @@ void input()
           // file_path = region[k];
 
           // reader_s->BookMVA(TString(region[k]) + process_list[i] + syst_name + "_BDT method", "dataset/weights/nominal_BDT.weights.xml" );
-
-          histBDT = new TH1F( syst_name + "_" + TString(region[k]) + "BDT",process_list[i],nbin,range[0],range[1]);
-          // histBDT = new TH1F( syst_name + "_" + TString(region[k]) + "BDT",process_list[i],16,bin_edges);
 
           tree->SetBranchAddress( "lep_Pt_0", &lep_Pt_0_s);
           tree->SetBranchAddress( "lep_Pt_1", &lep_Pt_1_s);
@@ -360,7 +364,7 @@ void input()
             tree->SetBranchAddress("lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT",&lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT);
             tree->SetBranchAddress("lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT",&lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT);
             tree->SetBranchAddress("lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT);
-            tree->SetBranchAddress("lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT);
+            // tree->SetBranchAddress("lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT);
             // tree->SetBranchAddress("lepSF_SF_Mu_PLVLoose_UP_AT",&lepSF_SF_Mu_PLVLoose_UP_AT);
             tree->SetBranchAddress("lepSF_SF_Mu_PLVTight_UP_AT",&lepSF_SF_Mu_PLVTight_UP_AT);
             tree->SetBranchAddress("custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up",&custTrigSF_TightElMediumMuID_FCLooseIso_SLTorDLT_EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up);
@@ -465,7 +469,7 @@ void input()
               lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT_f=lepSF_SF_Mu_ID_Loose_SYST_LOWPT_UP_AT;
               lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT_f=lepSF_SF_Mu_ID_Medium_SYST_LOWPT_UP_AT;
               lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT_f=lepSF_SF_Mu_Iso_FCLoose_SYST_UP_AT;
-              lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT_f=lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT;
+              // lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT_f=lepSF_SF_Mu_Iso_FCLoose_STAT_DOWN_ATSF_Mu_PLVLoose_UP_AT;
               // lepSF_SF_Mu_PLVLoose_UP_AT_f=lepSF_SF_Mu_PLVLoose_UP_AT;
               lepSF_SF_Mu_PLVTight_UP_AT_f=lepSF_SF_Mu_PLVTight_UP_AT;
 
@@ -479,14 +483,19 @@ void input()
 
             // cout<<Dphi_met_jets_s<<endl;
             bdt_eval_s = reader_s->EvaluateMVA("BDT method");
+            // if(i == 0 && bdt_eval_s > 0.4 ) cout<<bdt_eval_s<<endl;
 
             if(dsid != 342285)
             {
               // if(abs(weight_s) > 0.5) continue;
               if(i != N)  weight_b = weight_s;
               else  weight_b = 1.0;
+
+              if(i == 0 && bdt_eval_s > 0.4)  bdt_eval_s = 0.753449;  //tt smoothing
+
+              if(i == 4 && bdt_eval_s < -0.8 && weight_b < -1.0)  bdt_eval_s = -0.99; //Zjets smoothing
+
               histBDT->Fill(bdt_eval_s,weight_b);
-              
               tBDT->Fill();
             }
             // else if(i == N-1)  weight_b = 10*weight_s;
@@ -513,7 +522,8 @@ void input()
           tree->Delete("");
           f->Close();
           
-          // if(!(ntuple.Contains("nominal")))  histBDT->Smooth(1);
+          // if(!(ntuple.Contains("nominal")))  
+          // if(i == 4)  histBDT->Smooth(40);
 
           // sum_1 = 0;
           // sum_2 = 0;
@@ -534,9 +544,7 @@ void input()
           
           output = TFile::Open(output_path + region[k] + "/" + process_list[i]+".root","update");
           // cout<<"a"<<endl;
-          // histBDT->Write();
-
-          // tBDT->Fill();
+          histBDT->Write();
           tBDT->Write();
           output->Write();
           output->Close();

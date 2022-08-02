@@ -101,10 +101,11 @@ for i in range(len(h_list)):
     h_list[i] = ROOT.TH1F(str(Zp_mass[i]),str(Zp_mass[i]),int(2500/bin[i]),0,100)
 
 for sample in sample_list:
-    if "muv" in sample:   continue
-    if "root" not in sample:
+    # if "muv" not in sample:   continue
+    # if "root" not in sample:
     # if "361107" not in sample and "361666" not in sample and "361667" not in sample :
-    # if "36428" not in sample:
+    # if "364253_mc16a" not in sample:
+    if "data" not in sample:
         continue
 
     # if "Loose" not in sample and "LowPt" not in sample and "Med" not in sample:    continue
@@ -163,6 +164,10 @@ for sample in sample_list:
     lep0_cid = array('i',[0])
     lep1_cid = array('i',[0])
     lep2_cid = array('i',[0])
+    
+    lep0_d0sig = array('f',[0])
+    lep1_d0sig = array('f',[0])
+    lep2_d0sig = array('f',[0])
 
     lep0_isoLoose = array('i',[0])
     lep1_isoLoose = array('i',[0])
@@ -171,6 +176,14 @@ for sample in sample_list:
     lep0_isoTight = array('i',[0])
     lep1_isoTight = array('i',[0])
     lep2_isoTight = array('i',[0])
+
+    lep0_truthType = array('i',[0])
+    lep1_truthType = array('i',[0])
+    lep2_truthType = array('i',[0])
+
+    lep0_truthOrigin = array('i',[0])
+    lep1_truthOrigin = array('i',[0])
+    lep2_truthOrigin = array('i',[0])
 
     met_met = array('f',[0.])
     # met_phi = array('f',[0.])
@@ -231,6 +244,10 @@ for sample in sample_list:
     tt.Branch('lep0_id',lep0_id,'lep0_id/I')
     tt.Branch('lep1_id',lep1_id,'lep1_id/I')
     tt.Branch('lep2_id',lep2_id,'lep2_id/I')
+
+    tt.Branch('lep0_d0sig',lep0_d0sig,'lep0_d0sig/F')
+    tt.Branch('lep1_d0sig',lep1_d0sig,'lep1_d0sig/F')
+    tt.Branch('lep2_d0sig',lep2_d0sig,'lep2_d0sig/F')
     
     tt.Branch('lep0_isoLoose',lep0_isoLoose,'lep0_isoLoose/I')
     tt.Branch('lep1_isoLoose',lep1_isoLoose,'lep1_isoLoose/I')
@@ -239,6 +256,14 @@ for sample in sample_list:
     tt.Branch('lep0_isoTight',lep0_isoTight,'lep0_isoTight/I')
     tt.Branch('lep1_isoTight',lep1_isoTight,'lep1_isoTight/I')
     tt.Branch('lep2_isoTight',lep2_isoTight,'lep2_isoTight/I')
+    
+    tt.Branch('lep0_truthType',lep0_truthType,'lep0_truthType/I')
+    tt.Branch('lep1_truthType',lep1_truthType,'lep1_truthType/I')
+    tt.Branch('lep2_truthType',lep2_truthType,'lep2_truthType/I')
+
+    tt.Branch('lep0_truthOrigin',lep0_truthOrigin,'lep0_truthOrigin/I')
+    tt.Branch('lep1_truthOrigin',lep1_truthOrigin,'lep1_truthOrigin/I')
+    tt.Branch('lep2_truthOrigin',lep2_truthOrigin,'lep2_truthOrigin/I')
 
     tt.Branch('met_met',met_met,'met_met/F')
     tt.Branch('met_px',met_px,'met_px/F')
@@ -262,7 +287,6 @@ for sample in sample_list:
 
     tt.Branch('dR_1',dR_1,'dR_1/F')
     tt.Branch('dR_2',dR_2,'dR_2/F')
-
     tt.Branch('dPhi_1',dPhi_1,'dPhi_1/F')
     tt.Branch('dPhi_2',dPhi_2,'dPhi_2/F')
 
@@ -290,7 +314,7 @@ for sample in sample_list:
     if "muv" in sample:
         mass[0] = float(sample[sample.find("muvZp")+5:sample.find("muvZp")+8])
         id = Zp_mass.index(mass[0])
-        if mass[0] > 10: continue
+        # if mass[0] > 10: continue
         # print id
         for xsec_value in xsec_list:
             # print float(sample[sample.find("mass")+5:-5])
@@ -326,7 +350,7 @@ for sample in sample_list:
 
         if fabs(lep_cid[0][0]+lep_cid[1][0]+lep_cid[2][0]) > 1: continue
 
-        if t.lep0_FixedCutPflowLoose == 0 or t.lep1_FixedCutPflowLoose == 0 or  t.lep2_FixedCutPflowLoose == 0: continue
+        # if t.lep0_FixedCutPflowLoose == 0 or t.lep1_FixedCutPflowLoose == 0 or  t.lep2_FixedCutPflowLoose == 0: continue
             
         if t.lep0_eta > 2.5 or t.lep1_eta > 2.5 or t.lep2_eta > 2.5:   continue
 
@@ -517,6 +541,27 @@ for sample in sample_list:
         lep0_id[0] = int(lep_id[l_order[2][0]][0])*int(lep_cid[l_order[2][0]][0])
         lep1_id[0] = int(lep_id[l_order[1][0]][0])*int(lep_cid[l_order[1][0]][0])
         lep2_id[0] = int(lep_id[l_order[0][0]][0])*int(lep_cid[l_order[0][0]][0])
+
+        if "data" not in sample:
+            lep0_truthType[0] = t.lep0_truthType
+            lep1_truthType[0] = t.lep1_truthType
+            lep2_truthType[0] = t.lep2_truthType
+            
+            lep0_truthOrigin[0] = t.lep0_truthOrigin
+            lep1_truthOrigin[0] = t.lep1_truthOrigin
+            lep2_truthOrigin[0] = t.lep2_truthOrigin
+        else:
+            lep0_truthType[0] = -1
+            lep1_truthType[0] = -1
+            lep2_truthType[0] = -1
+            
+            lep0_truthOrigin[0] = -1
+            lep1_truthOrigin[0] = -1
+            lep2_truthOrigin[0] = -1
+
+        lep0_d0sig[0] = t.lep0_d0sig
+        lep1_d0sig[0] = t.lep1_d0sig
+        lep2_d0sig[0] = t.lep2_d0sig
 
         # print(lep1_pt[0])
         met_met[0] = t.met_tst

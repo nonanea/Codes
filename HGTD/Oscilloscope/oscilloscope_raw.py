@@ -112,7 +112,7 @@ def Charge(x,A,Max,left,right,threshold):
     charge = 0
 
     for i in range(int(Max-0.5*width),int(Max+width)):
-        charge+=A[i]
+        if A[i] > threshold:    charge+=A[i]
 
     return(charge*deltaT)
 
@@ -218,18 +218,21 @@ for file in fileList:
 for i in range(4):
     list_num[i] = len(list_ch[i])
 
-ch_max = list_num.index(max(list_num))
+# ch_max = list_num.index(max(list_num))
 # print (ch_max,list_num,max(list_num),len(list_ch[ch_max]))
 
 for i in range(4):
     if list_ch[i]:
         ch_list.append(i)
-        if i != ch_max:
-            for file in list_ch[ch_max]:
-                # print(i,j)
-                if file.replace("C"+str(ch_max+1),"C"+str(i+1)) not in list_ch[i]:
-                    print(file,"is not available in other channels and to be removed")
-                    list_ch[ch_max].remove(file)
+        if len(list_ch[i]) > min(list_num):
+            print(list_ch[i][-1],"is not available in other channels and to be removed")
+            list_ch[i].remove(list_ch[i][-1])
+        # if i != ch_max:
+        #     for file in list_ch[ch_max]:
+        #         # print(i,j)
+        #         if file.replace("C"+str(ch_max+1),"C"+str(i+1)) not in list_ch[i]:
+        #             print(file,"is not available in other channels and to be removed")
+        #             list_ch[ch_max].remove(file)
 
 
 # Ref processing
@@ -263,13 +266,13 @@ for file in list_ch[ch_ref]:
     (ped[ch_ref],noise[ch_ref],noise_amp[ch_ref]) = PedestalAndNoise(y_ave)
     (Amax[ch_ref],Tmax[ch_ref],Max[ch_ref]) = Peak(x_ave,y_ave,threshold,init_f,fin_f)
 
-    if Amax[ch_ref]*1000 > 1000:
-        continue
+    # if Amax[ch_ref]*1000 > 1000:
+    #     continue
     
     n = Max[ch_ref]
     while y_ave[n] > (Amax[ch_ref]+ped[ch_ref])*0.5:  
         n-=1
-    Max[ch_ref] = n
+    Max[ch_ref] = abs(n)
 
     t_ref.append(Max[ch_ref])
 
@@ -349,8 +352,8 @@ for k in ch_list:
         (ped[k],noise[k],noise_amp[k]) = PedestalAndNoise(y_ave)
         (Amax[k],Tmax[k],Max[k]) = Peak(x_ave,y_ave,threshold,init_f,fin_f)
 
-        if Amax[k]*1000 < 10:
-            continue
+        # if Amax[k]*1000 < 10:
+        #     continue
         
         if int(t_ref[j]+pulse_length) > length: continue
         for n in range(int(t_ref[j]-pulse_length), int(t_ref[j]+pulse_length)):
@@ -536,14 +539,17 @@ for i in range(len(list_ch[ch_dut])):
 
         (Amax[j],Tmax[j],Max[j]) = Peak(x,A,threshold,init_f,fin_f)
 
-        # print(j,Amax[j])
+        # if j == 3: print(j,Amax[j])
 
         if Amax[j] > 1.0: continue
 
-        charge[j] = Charge(x,A,Max[j],P_left[j],P_right[j],threshold)
-        charge_hw[j] = Charge(x,A,Max[j],0.8*P_left[j],0.8*P_right[j],threshold)
+        # charge[j] = Charge(x,A,Max[j],P_left[j],P_right[j],threshold)
+        # charge_hw[j] = Charge(x,A,Max[j],0.8*P_left[j],0.8*P_right[j],threshold)
         # charge_dw[j] = Charge(x,A,Max[j],0,len(A),threshold)
-        charge_dw[j] = Charge(x,A,Max[j],2*P_left[j],2*P_right[j],threshold)
+        charge[j] = Charge(x,A,Max[j],P_left[j],P_right[j],-10*Amax[j])
+        charge_hw[j] = Charge(x,A,Max[j],0.8*P_left[j],0.8*P_right[j],0.0)
+        charge_dw[j] = Charge(x,A,Max[j],0,len(A),-10*Amax[j])
+        # charge_dw[j] = Charge(x,A,Max[j],2*P_left[j],2*P_right[j],threshold)
 
         # print(j,P_right[j],charge_dw[j])
         

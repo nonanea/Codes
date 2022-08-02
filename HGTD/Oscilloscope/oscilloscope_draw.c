@@ -82,7 +82,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
     vector<TString> dirList, list_0, list_1, list_2;
     while ((entry = (char *)gSystem->GetDirEntry(plotDir)))
     {
-        if(!TString(entry).Contains(".txt"))    continue;
+        if(!TString(entry).Contains(".csv"))    continue;
         if(TString(entry).Contains("C1"))   list_0.push_back(entry);
         if(TString(entry).Contains("C2"))   list_1.push_back(entry);
         if(TString(entry).Contains("C3"))   list_2.push_back(entry);
@@ -94,7 +94,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
     TString txtFileFullPath;
     vector<int>  t_ref,id_ref;
     int  ch_dut = 1, ch_ref = 2;
-    fin_f = 0.4;
+    // fin_f = 0.4;
     
     // Reference processing
     for(j = 0; j < list_2.size(); j++)
@@ -119,8 +119,8 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         {
             tree->GetEntry(n);
             xlist_ave.push_back(Time*1e9);
-            // ylist_ave.push_back(Ampl);
-            ylist_ave.push_back(-Ampl);
+            ylist_ave.push_back(Ampl);
+            // ylist_ave.push_back(-Ampl);
         }
         
         tree->Delete("");
@@ -130,9 +130,11 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         PedestalAndNoise(ylist_ave,&ped[ch_ref],&noise[ch_ref],&noise_amp[ch_ref]);
         Peak(xlist_ave,ylist_ave,&Tmax[ch_ref],&Amax[ch_ref],&Max[ch_ref],threshold,init_f,fin_f);
 
-        if(Amax[ch_ref]*1000 < 50)  continue;
+        // if(Amax[ch_ref]*1000 < 50)  continue;
 
         n = Max[ch_ref];
+        
+        // cout<<n<<endl;
         while(ylist_ave[n] > (Amax[ch_ref]+ped[ch_ref])*0.5)  Max[ch_ref] = n--;
 
         t_ref.push_back(Max[ch_ref]);
@@ -186,7 +188,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         
         Peak(xlist_ave,ylist_ave,&Tmax[ch_dut],&Amax[ch_dut],&Max[ch_dut],threshold,init_f,fin_f);
 
-        if(Amax[ch_dut]*1000 < 50)  continue;
+        // if(Amax[ch_dut]*1000 < 50)  continue;
 
         // n = Max[ch_dut];
         // while(ylist_ave[n] > 0.5*Amax[ch_dut])  Max[ch_dut] = n--;
@@ -209,6 +211,8 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
     TText *text;
     vector<vector<double>> Tlist_ave(4), Alist_ave(4);
 
+    int P_left[4] = {0}, P_right[4] = {1};
+
     ofstream myfile;
     myfile.open (plotStorePath + plotType + "average.txt");
 
@@ -225,14 +229,12 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
             if(n == 1)  myfile<<t[n][i]<<","<<sum[n][i]<<endl;     
         }
     }
-
-    int P_left[4] = {0}, P_right[4] = {0};
-    fin_f = 0.4;
+    // fin_f = 0.4;
 
     for(i = 0; i < 4; i++)
     {
         //Integral range
-        Peak(Tlist_ave[i],Alist_ave[i],&Tmax[i],&Amax[i],&Max[i],threshold,0.5,0.9);
+        Peak(Tlist_ave[i],Alist_ave[i],&Tmax[i],&Amax[i],&Max[i],threshold,0.1,0.9);
         
         n = Max[i];
         while(Alist_ave[i][n] > Amax[i]*0.1)  P_left[i] = n--;
@@ -256,7 +258,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         gr_ave[i]->GetYaxis()->SetTitle("Ampl [V]");
 
         gr_ave[i]->GetXaxis()->SetNdivisions(505, kTRUE);
-        gr_ave[i]->GetXaxis()->SetLimits(-5, 10);
+        gr_ave[i]->GetXaxis()->SetLimits(-25, 25);
         // gr_ave[i]->GetYaxis()->SetRangeUser(-0.008, 0.1);
         gr_ave[i]->GetYaxis()->SetRangeUser(-0.08*y_max, 1.1*y_max);
 
@@ -350,6 +352,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
     j = 0;
     TH2D *hA_T[4];
     int t_range[2] = {-20,-10};
+    length = 99999;
 
     for(n = 0; n < 4; n++)
     {
@@ -380,9 +383,9 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         else if(txtFile.Contains("C4"))  ch_num = 3;
         else ch_num = 0;
         
-        // if(ch_num == 0) continue;
+        if(ch_num == 2) continue;
         txtFileFullPath = dataPath + txtFile;
-        //cout<<txtFileFullPath<<endl;
+        // cout<<txtFileFullPath<<endl;
         TString plotInfo = txtFile;
         plotInfo = plotInfo.ReplaceAll(".txt", "");
         TTree *tree = new TTree("waveforms", "waveforms of oscillscope");
@@ -399,13 +402,13 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
             tree->GetEntry(n);
             //cout << Time << "  " << Ampl << " " << endl;
             xlist.push_back(Time*1e9);
-            // ylist.push_back(Ampl);
-            ylist.push_back(-Ampl);
+            ylist.push_back(Ampl);
+            // ylist.push_back(-Ampl);
         }
         tree->Delete("");
-
         if(length > xlist.size())   length = xlist.size();
 
+        // cout<<length<<endl;
         //DUT
         PedestalAndNoise(ylist,&ped[ch_num],&noise[ch_num],&noise_amp[ch_num]);
         for( n = 0; n < length; n++)
@@ -428,13 +431,13 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
         //delta_amax = Peak(xlist,Alist,&Tmax[ch_num],&Amax[ch_num],&Max[ch_num],threshold);
         init_f = 0.1;
         fin_f = 0.9;
-        if(ch_num == ch_dut || ch_num == ch_ref)
-        {
-            init_f = 0.2;
-            fin_f = 0.44;
-            // init_f = 0.24;
-            // fin_f = 0.36;
-        }
+        // if(ch_num == ch_dut || ch_num == ch_ref)
+        // {
+        //     init_f = 0.2;
+        //     fin_f = 0.44;
+        //     // init_f = 0.24;
+        //     // fin_f = 0.36;
+        // }
         // if(ch_num == ch_dut) init_f = 0.2;
         Peak(xlist,Alist,&Tmax[ch_num],&Amax[ch_num],&Max[ch_num],threshold,init_f,fin_f);
         //cout<<"Amax="<<Amax<<endl;
@@ -517,7 +520,7 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
 
         //T vs. A
         hA_T[ch_num]->Fill(Amax[ch_num]*1000,Tmax[ch_num]);
-        //cout<<Amax*1000<<endl;
+        // cout<<Amax[ch_num]*1000<<endl;
 
         // if(draw && Amax[ch_num]*1000 > 30 && ch_num == 1 && i < 50)
         if(draw && ch_num == 1)
@@ -568,7 +571,6 @@ void oscilloscope_draw(TString dataPath, bool average_only = false, bool draw = 
     //cout<<"multi="<<multi<<endl;
 
     for(n = 0; n < 4; n++)  tt[n]->Write();
-
     // Draw Amax vs. Tmax distribution
     for(n = 0; n < 4; n++)
     {
@@ -620,6 +622,7 @@ double Peak(vector<double> xlist, vector<double> Alist, double *Tmax, double *Am
             // if(Alist[k] > Alist [k - 1] && Alist[k] > Alist[k + 1] && Alist[k] > amax)
             if(Alist[k] > amax)
             {   
+                // cout<<amax<<endl;
                 amax_sub = amax;
                 amax = Alist[k];
                 *Tmax = xlist[k];

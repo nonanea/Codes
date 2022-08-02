@@ -9,18 +9,21 @@ i=0
 j=-1
 
 # CT_array=(0 0 0 0)
+# echo $txt_file
 for obj in $txt_file
 do
-    #echo $obj
+    echo $obj
     Bias=${obj%V*}
     Bias=${Bias##*_}
+    # Bias=${obj%_*}
+    # Bias=${Bias##*pix_}
     #echo $Bias"V"
 
     cat $obj | while read line
     do
         i=$(($i+1))
 
-        if [[ $line = "amplitude_"* ]] || [[ $line = "charge_"* ]] || [[ $line = "RMS_"* ]] || [[ $line = "landau_"* ]] || [[ $line = "jitter_"* ]] || [[ $line = "sigma_"* ]] || [[ $line = "risetime_"* ]] || [ $line = "tof_cfd_23" ] || [[ $line = "SNR_"* ]]
+        if [[ $line = "amplitude_"* ]] || [[ $line = "charge_"* ]] || [[ $line = "RMS_"* ]] || [[ $line = "landau_"* ]] || [[ $line = "jitter_"* ]] || [[ $line = "sigma_"* ]] || [[ $line = "risetime_"* ]] || [[ $line = "tof_cfd_"* ]] || [[ $line = "SNR_"* ]]
         then
             # echo $i","$line
             
@@ -42,10 +45,18 @@ do
                 # echo $Bias,$mpv,0,$mpv_err>>$file_dir$type.csv
                 echo $Bias,$mpv,0,$mpv_err>>$file_dir$type.txt
 
+                if [ $type = RMS_1 ]
+                then
+                    CT1=$mpv
+                    CT3=$mpv_err
+                fi
+
                 if [ $type = charge_1 ]
                 then
                     CT0=$mpv
                     CT2=$mpv_err
+
+                    echo $CT0,$CT1,$CT2,$CT3>>$file_dir'NT'.txt
                 fi
             fi
 
@@ -89,6 +100,7 @@ do
                         CT3=$sigma_err
 
                         echo $CT0,$CT1,$CT2,$CT3>>$file_dir'CT'.txt
+                        echo $Bias,$CT0,$CT1,$CT2,$CT3>>$file_dir'VCT'.txt
                 fi
             fi
 
@@ -99,6 +111,16 @@ do
 
                 # echo $Bias,$sigma,0,0>>$file_dir$type.csv
                 echo $Bias,$sigma,0,0>>$file_dir$type.txt
+                    
+                    if [ $type = SNR_1 ]
+                    then
+                        echo $CT0,$sigma,$CT2,0>>$file_dir'SNRC'.txt
+                    fi
+                    
+                    if [ $type = jitter_ave_1 ]
+                    then
+                        echo $CT0,$sigma,$CT2,0>>$file_dir'JC'.txt
+                    fi
             fi
         fi
     done

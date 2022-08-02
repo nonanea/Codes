@@ -1,0 +1,16 @@
+202.141.161.66  ui01.lcg.ustc.edu.cn
+202.141.161.67  ui02.lcg.ustc.edu.cn
+
+202.141.161.67  ui04.lcg.ustc.edu.cn
+202.141.161.67  ui05.lcg.ustc.edu.cn
+
+ssh lich@
+ssh -Y chihao@lxplus.cern.ch
+
+vsh17035@yuoia.com doodledoodle
+
+pev03710@yuoia.com latexlatex
+
+C:\Users\user\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs
+
+sUrPrIsE
